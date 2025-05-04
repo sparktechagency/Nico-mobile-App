@@ -45,6 +45,8 @@ import YourProblem from '../screens/UserPartStackScreen/UserSideStackScreens/You
 import ViewAllClosed from '../screens/UserPartStackScreen/UserSideStackScreens/ViewAllClosed';
 import UserCallsDetails from '../screens/UserPartStackScreen/UserSideStackScreens/UserCallsDetails';
 import ChatList from '../screens/UserPartStackScreen/UserSideStackScreens/ChatList';
+import { StatusBar } from 'react-native';
+import NewUserOtpVerify from '../screens/UserPartStackScreen/UserAuthenticationScreens/NewUserOtpVerify';
 // import Icon from 'react-native-vector-icons/Ionicons';
 
 const Stack = createNativeStackNavigator();
@@ -52,6 +54,11 @@ const Stack = createNativeStackNavigator();
 const AppNavigation = () => {
   return (
     <NavigationContainer>
+       <StatusBar 
+    backgroundColor="#ED1C24" 
+    barStyle="light-content" 
+    translucent={false} 
+  />
       <Stack.Navigator initialRouteName="SplashScreen">
         <Stack.Screen
           name="SplashScreen"
@@ -114,6 +121,20 @@ const AppNavigation = () => {
         <Stack.Screen
           name="VerificationAsUser"
           component={VerificationAsUser}
+          options={{
+            headerShown: true,
+            animation: 'none',
+            headerTitle: '', // Hide title
+            headerShadowVisible: false, // Removes the bottom shadow (for native stack)
+            headerStyle: {
+              elevation: 0, // Removes shadow on Android
+              shadowOpacity: 0, // Removes shadow on iOS
+            },
+          }}
+        />
+        <Stack.Screen
+          name="NewUserOtpVerify"
+          component={NewUserOtpVerify}
           options={{
             headerShown: true,
             animation: 'none',

@@ -3,7 +3,7 @@ import {api} from '../api/baseApi';
 export const AuthApiSlice = api.injectEndpoints({
   endpoints: builder => ({
     // login
-    login: builder.mutation({
+    uselogdin: builder.mutation({
       query: data => {
         return {
           url: `/auth/login`,
@@ -15,7 +15,7 @@ export const AuthApiSlice = api.injectEndpoints({
     }),
 
     // signUp
-    signUp: builder.mutation({
+    usesignUp: builder.mutation({
       query: data => ({
         url: `/auth/signup`,
         method: 'POST',
@@ -96,12 +96,13 @@ export const AuthApiSlice = api.injectEndpoints({
 });
 
 export const {
-  useLoginMutation,
-  useSignUpMutation,
+  useUselogdinMutation,
+  useUsesignUpMutation,
   useVerifyOTPMutation,
   useResendOTPMutation,
   useForgetPasswordMutation,
   useChangePasswordMutation,
   useGetOwnProfileQuery,
+  useResetpasswordMutation
 
 } = AuthApiSlice;

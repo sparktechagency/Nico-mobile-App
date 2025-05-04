@@ -18,7 +18,7 @@ import Animated, {
 import {useTheme} from '../../../Context/ThemeContext';
 import { useResendOTPMutation, useVerifyOTPMutation } from '../../../redux/apiSlices/authApiSlice';
 
-const VerificationCodeScreenUser = ({route}) => {
+const NewUserOtpVerify = ({route}) => {
   const {email} = route?.params || {};
   const [code, setCode] = useState(['', '', '', '', '', '']);
   const inputs = useRef([]);
@@ -51,7 +51,7 @@ const handleverifycode = async() => {
     console.log('Response',response);
     if(response.status === true){
       Alert.alert('Success', 'Verification successful.');
-      navigation.navigate('ResetPasswordAsUser',{email});
+      navigation.navigate('LoginAsUser');
     }
   } catch (error) {
     console.log(error);
@@ -199,4 +199,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default VerificationCodeScreenUser;
+export default NewUserOtpVerify;

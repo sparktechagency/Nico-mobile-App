@@ -37,7 +37,7 @@ const  InitialScreen = () => {
         {/* Login Button */}
         <TouchableOpacity
           style={[styles.button, { borderColor: theme.primary}]}
-          onPress={() => {navigation.navigate('LoginScreen')}}>
+          onPress={() => {navigation.navigate('LoginAsUser')}}>
           <Text style={[styles.buttonText, {color: theme.text}]}>
             LOGIN AS A TECHNICIAN
           </Text>

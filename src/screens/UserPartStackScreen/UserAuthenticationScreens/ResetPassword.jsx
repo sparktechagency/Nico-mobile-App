@@ -10,16 +10,24 @@ import {
   ScrollView,
   Keyboard,
   TouchableWithoutFeedback,
+  Alert,
+  Platform
 } from 'react-native';
 import {useTheme} from '../../../Context/ThemeContext';
+import { useResetpasswordMutation } from '../../../redux/apiSlices/authApiSlice';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
-const ResetPasswordScreenUser = () => {
+const ResetPasswordScreenUser = ({route}) => {
+  const {email} = route.params || {};
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const navigation = useNavigation();
   const theme = useTheme();
 
   const translateY = useSharedValue(0);
+  const [resetpassword, {isLoading}] = useResetpasswordMutation();
 
   useEffect(() => {
     const keyboardDidShowListener = Keyboard.addListener(
@@ -41,6 +49,28 @@ const ResetPasswordScreenUser = () => {
     };
   }, []);
 
+  const handleResetPassword = async() => {
+    const allpass = {
+      email: email,
+      password: password,
+      password_confirmation: confirmPassword,
+    };
+
+    console.log('allpass',allpass);
+
+    try {
+      const resp = await resetpassword(allpass).unwrap();
+      console.log('response',resp);
+
+      if(resp.status === true){
+        Alert.alert('Success', 'Password changed successfully.');
+        navigation.navigate('LoginAsUser');
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{translateY: translateY.value}],
   }));
@@ -55,27 +85,53 @@ const ResetPasswordScreenUser = () => {
           </View>
           <View style={styles.formContainer}>
             <Text style={[styles.text, {color: theme.text}]}>Password</Text>
-            <TextInput
-              style={[styles.input, {backgroundColor: theme.whitesmoke, color: theme.text}]}
-              placeholder="**********"
-              secureTextEntry
-              value={password}
-              onChangeText={setPassword}
-              placeholderTextColor={theme.placeholder}
-            />
+            <View style={[styles.passwordContainer, {backgroundColor: theme.whitesmoke}]}>
+              <TextInput
+                style={[styles.passwordInput, {color: theme.text}]}
+                placeholder="**********"
+                secureTextEntry={!showPassword}
+                value={password}
+                onChangeText={setPassword}
+                placeholderTextColor={theme.placeholder}
+              />
+              <TouchableOpacity 
+                onPress={() => setShowPassword(!showPassword)}
+                style={styles.eyeIcon}
+              >
+                <Icon 
+                  name={showPassword ? 'eye-off' : 'eye'} 
+                  size={20} 
+                  color={theme.placeholder} 
+                />
+              </TouchableOpacity>
+            </View>
+            
             <Text style={[styles.text, {color: theme.text}]}>Confirm Password</Text>
-            <TextInput
-              style={[styles.input, {backgroundColor: theme.whitesmoke, color: theme.text}]}
-              placeholder="**********"
-              secureTextEntry
-              value={confirmPassword}
-              onChangeText={setConfirmPassword}
-              placeholderTextColor={theme.placeholder}
-            />
+            <View style={[styles.passwordContainer, {backgroundColor: theme.whitesmoke}]}>
+              <TextInput
+                style={[styles.passwordInput, {color: theme.text}]}
+                placeholder="**********"
+                secureTextEntry={!showConfirmPassword}
+                value={confirmPassword}
+                onChangeText={setConfirmPassword}
+                placeholderTextColor={theme.placeholder}
+              />
+              <TouchableOpacity 
+                onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+                style={styles.eyeIcon}
+              >
+                <Icon 
+                  name={showConfirmPassword ? 'eye-off' : 'eye'} 
+                  size={20} 
+                  color={theme.placeholder} 
+                />
+              </TouchableOpacity>
+            </View>
+            
             <TouchableOpacity
-              onPress={() => {navigation.navigate("LoginAsUser")}}
+              onPress={handleResetPassword}
               style={[styles.updateButton, {backgroundColor: theme.primary}]}>
-              <Text style={[styles.updateButtonText, {color: theme.background}]}>UPDATE PASSWORD</Text>
+              <Text style={[styles.updateButtonText, {color: theme.background}]}>{ isLoading ? 'Loading...' : 'UPDATE PASSWORD'}</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>
@@ -120,12 +176,22 @@ const styles = StyleSheet.create({
   formContainer: {
     marginBottom: '5%',
   },
-  input: {
+  passwordContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
     borderWidth: 1,
     borderColor: '#ccc',
     borderRadius: 5,
-    padding: '4%',
     marginBottom: '5%',
+    paddingHorizontal: 10,
+  },
+  passwordInput: {
+    flex: 1,
+    paddingVertical: Platform.OS === 'ios' ? 12 : 8,
+    fontFamily: 'Poppins-Regular',
+  },
+  eyeIcon: {
+    padding: 8,
   },
   updateButton: {
     padding: 15,

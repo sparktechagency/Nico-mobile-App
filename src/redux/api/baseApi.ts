@@ -3,7 +3,7 @@ import {BaseQueryFn, createApi} from '@reduxjs/toolkit/query/react';
 import axios, {AxiosRequestConfig, AxiosResponse} from 'axios';
 
 
-
+ 
 interface BaseQueryArgs extends AxiosRequestConfig {
   url: string;
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
@@ -20,7 +20,7 @@ const baseQueryWithRath: BaseQueryFn<BaseQueryArgs, unknown, unknown> = async (
 
   try {
     const result: AxiosResponse = await axios({
-      baseURL: 'http://182.252.68.227:10000/api',
+      baseURL: 'http://182.252.68.227:10000/api/',
       ...args,
       url: args.url,
       method: args.method,

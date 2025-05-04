@@ -1,9 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {BaseQueryFn, createApi} from '@reduxjs/toolkit/query/react';
-import axios, {AxiosRequestConfig, AxiosResponse} from 'axios';
+import { BaseQueryFn, createApi } from '@reduxjs/toolkit/query/react';
+import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
 
-
- 
 interface BaseQueryArgs extends AxiosRequestConfig {
   url: string;
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
@@ -16,9 +14,10 @@ const baseQueryWithRath: BaseQueryFn<BaseQueryArgs, unknown, unknown> = async (
   api,
   extraOptions,
 ) => {
-  const token = AsyncStorage.getItem('token');
-
   try {
+    const token = await AsyncStorage.getItem('token');
+    console.log('token', token);
+
     const result: AxiosResponse = await axios({
       baseURL: 'http://182.252.68.227:10000/api/',
       ...args,
@@ -27,28 +26,27 @@ const baseQueryWithRath: BaseQueryFn<BaseQueryArgs, unknown, unknown> = async (
       data: args.body,
       headers: {
         ...args.headers,
-        Authorization: token ? `Bearer ${token}` : '',
+        ...(token && { Authorization: `Bearer ${JSON.parse(token)}` }), // ✅ smart way
       },
     });
-    // Check if response data is a string and malformed
+
     if (typeof result?.data === 'string') {
-      // if (!result.data.endsWith('}')) {
       const withCurly = (result.data += '}');
-      return {data: JSON.parse(withCurly)};
-      // }
-    }
-    if (typeof result?.data === 'object') {
-      return {data: result?.data};
+      return { data: JSON.parse(withCurly) };
     }
 
-    return {data: result?.data};
+    if (typeof result?.data === 'object') {
+      return { data: result?.data };
+    }
+
+    return { data: result?.data };
   } catch (error: any) {
     if (error.response?.data) {
       if (typeof error.response?.data === 'string') {
         const withCurly = (error.response.data += '}');
-        return {error: JSON.parse(withCurly)};
+        return { error: JSON.parse(withCurly) };
       } else {
-        return {error: error.response?.data};
+        return { error: error.response?.data };
       }
     }
     return {
@@ -60,7 +58,7 @@ const baseQueryWithRath: BaseQueryFn<BaseQueryArgs, unknown, unknown> = async (
   }
 };
 
-// Define the `createApi` with appropriate types
+
 export const api = createApi({
   reducerPath: 'api',
   baseQuery: baseQueryWithRath,

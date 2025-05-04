@@ -4,9 +4,21 @@ import { SvgXml } from 'react-native-svg';
 import { IconNotification, message, qrscan } from '../../../assets/Icons/icons';
 import avater from '../../../assets/Icons/avater.png';
 import { useNavigation } from '@react-navigation/native';
+import { useGetOwnProfileQuery } from '../../../redux/apiSlices/authApiSlice';
 
 const UserHeader = () => {
+const {data, error, isLoading} = useGetOwnProfileQuery();
+console.log('data',data);
 
+
+
+
+if(error){
+  console.log('error',error);
+}
+if(isLoading){
+  return <Text>Loading...</Text>
+}
 
   const Navigation = useNavigation();
   return (

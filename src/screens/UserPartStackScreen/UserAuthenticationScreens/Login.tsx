@@ -95,7 +95,7 @@ const LoginScreenForUser = () => {
       }
       if (result?.data?.access_token) {
         Alert.alert('Login Success', 'You have successfully logged in.');
-        AsyncStorage.setItem('token', result.data.access_token);
+        AsyncStorage.setItem('token', JSON.stringify(result?.data?.access_token));
         navigation.navigate('UserInitialScreen');
       }
     } catch (err) {

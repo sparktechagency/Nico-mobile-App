@@ -135,7 +135,7 @@ const UserCallsDetails = ({ navigation, route }) => {
       <View style={tw`bg-[#F0F0F0] p-4 rounded-lg mx-[20px] my-2`}>
         <Text style={tw`font-bold text-[#FF6769]`}>Cost:</Text>
         <Text style={tw`text-[#000000] font-bold`}>
-          {data?.cost ? `$${data.cost}` : 'N/A'}
+          {data?.cost ? `$${data.cost}` : 'N/A'} 
         </Text>
       </View>
     </ScrollView>

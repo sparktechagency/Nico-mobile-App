@@ -10,11 +10,14 @@ import {
 } from 'react-native';
 import { useForm, Controller } from 'react-hook-form';
 import tw from '../../../lib/tailwind';
+import { useChangePasswordMutation } from '../../../redux/apiSlices/authApiSlice';
 
-const ChnagePassword = () => {
+const ChangePassword = () => {
+  const [changePassword, { isLoading }] = useChangePasswordMutation();
   const {
     control,
     handleSubmit,
+    reset,
     formState: { errors },
   } = useForm({
     defaultValues: {
@@ -24,9 +27,24 @@ const ChnagePassword = () => {
     },
   });
 
-  const onSubmit = (data) => {
-    console.log('Form Data:', data);
-    Alert.alert('Password Updated', 'Your password has been updated successfully.');
+  const onSubmit = async (data) => {
+    const passwords = {
+      current_password: data.currentPassword,
+      new_password: data.password,
+      new_password_confirmation: data.confirmPassword,
+    };
+
+    try {
+      const result = await changePassword(passwords).unwrap();
+      if (result.status === true) {
+        Alert.alert('Success', result.message || 'Password changed successfully.');
+        // Reset the form after successful submission
+        reset();
+      }
+    } catch (error) {
+      console.log(error);
+      Alert.alert('Error', error.message || 'Failed to change password.');
+    }
   };
 
   return (
@@ -141,11 +159,12 @@ const ChnagePassword = () => {
         </View>
 
         <TouchableOpacity
+          disabled={isLoading}
           style={tw`bg-[#ED1C24] p-4 rounded-lg flex-row items-center justify-center mt-4 max-w-[300px] mx-auto`}
           onPress={handleSubmit(onSubmit)}
         >
           <Text style={tw`text-[16px] text-white font-semibold`}>
-            SAVE CHANGES
+            {isLoading ? 'Loading...' : 'SAVE CHANGES'}
           </Text>
         </TouchableOpacity>
       </View>
@@ -153,4 +172,4 @@ const ChnagePassword = () => {
   );
 };
 
-export default ChnagePassword;
+export default ChangePassword;

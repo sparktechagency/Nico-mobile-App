@@ -13,12 +13,21 @@ import tw from '../../../lib/tailwind';
 import Svg, { SvgXml } from 'react-native-svg';
 import { aboutIcon, changepaswordIcon, faqIcon, LocationIcon, logoutIcon, privacyIcon, rightIcon, userIcon } from '../../../assets/Icons/icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useGetOwnProfileQuery } from '../../../redux/apiSlices/authApiSlice';
 
 
 
 const TechnicianProfile = () => {
   const navigation = useNavigation();
+  const { data, error, isLoading } = useGetOwnProfileQuery();
 
+console.log('data',data);
+  if (error) {
+    console.log('error', error);
+  }
+  if (isLoading) {
+    return <Text>Loading...</Text>;
+  }
   const menuItems = [
     {
       id: 1,
@@ -100,17 +109,17 @@ const TechnicianProfile = () => {
   const renderHeader = () => (
     <View style={tw`px-4 py-6 bg-white flex-row items-center`}>
       <Image
-        source={require('../../../assets/Icons/avater.png')}
+      source={{ uri: data?.data?.image }}
         style={tw`w-[50px] h-[50px] rounded-full mr-2`}
       />
       <View style={tw`flex-1  flex-row justify-between`}>
 
         <View>
           <Text style={tw`text-[16px] font-semibold text-[#000000] `}>
-            Md. Mehedi Hasan
+          {data?.data?.name}
           </Text>
           <Text style={tw`text-sm text-gray-500 `}>
-            example@gmail.com
+            {data?.data?.email}
           </Text>
         </View>
 
@@ -121,10 +130,10 @@ const TechnicianProfile = () => {
 
           <View  >
             <Text style={tw`text-sm text-gray-500`}>
-              Banasree, Rampura
+             Location
             </Text>
             <Text style={tw`text-[12px] font-medium text-[#000000] text-center`}>
-              Dhaka, Bangladesh
+              {data?.data?.address}
             </Text>
 
           </View>

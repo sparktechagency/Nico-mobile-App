@@ -6,11 +6,13 @@ import {
   TouchableOpacity,
   FlatList,
   SafeAreaView,
+  Alert,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import tw from '../../../lib/tailwind';
 import Svg, { SvgXml } from 'react-native-svg';
 import { aboutIcon, changepaswordIcon, faqIcon, LocationIcon, logoutIcon, privacyIcon, rightIcon, userIcon } from '../../../assets/Icons/icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
 
@@ -53,17 +55,36 @@ const TechnicianProfile = () => {
       icon: logoutIcon,
       title: 'Logout',
     },
-  ];const handleMenuPress = (item) => {
+  ];const handleMenuPress = async(item) => {
     if (item.title === 'Logout') {
-      // Clear any stored user data (if needed)
-      // Example: AsyncStorage.clear();
-      
-      // Redirect to LoginPage
-      navigation.reset({
-        index: 0,
-        routes: [{ name: 'SplashScreen' }],
-      });
-      return;
+      Alert.alert(
+        'Logout',            
+        'Are you sure you want to logout?', 
+        [
+          {
+            text: 'Cancel',
+            style: 'cancel',
+          },
+          {
+            text: 'Logout',
+            onPress: async () => {
+              try {
+                await AsyncStorage.removeItem('token');
+                navigation.reset({
+                  index: 0,
+                  routes: [{ name: 'InitialScreen' }],
+                });
+              } catch (error) {
+                console.log('Logout Error:', error);
+              }
+            },
+            style: 'destructive',
+          },
+        ],
+        { cancelable: true }
+      );
+     
+
     }
   
     if (item.route) {

@@ -1,5 +1,5 @@
-import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import {NavigationContainer} from '@react-navigation/native';
+import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import React from 'react';
 import InitialScreen from '../screens/InitialScreen';
 import SplashScreen from '../screens/SplashScreen';
@@ -45,7 +45,7 @@ import YourProblem from '../screens/UserPartStackScreen/UserSideStackScreens/You
 import ViewAllClosed from '../screens/UserPartStackScreen/UserSideStackScreens/ViewAllClosed';
 import UserCallsDetails from '../screens/UserPartStackScreen/UserSideStackScreens/UserCallsDetails';
 import ChatList from '../screens/UserPartStackScreen/UserSideStackScreens/ChatList';
-import { StatusBar } from 'react-native';
+import {StatusBar} from 'react-native';
 import NewUserOtpVerify from '../screens/UserPartStackScreen/UserAuthenticationScreens/NewUserOtpVerify';
 // import Icon from 'react-native-vector-icons/Ionicons';
 
@@ -54,16 +54,16 @@ const Stack = createNativeStackNavigator();
 const AppNavigation = () => {
   return (
     <NavigationContainer>
-       <StatusBar 
-    backgroundColor="#ED1C24" 
-    barStyle="light-content" 
-    translucent={false} 
-  />
+      <StatusBar
+        backgroundColor="#ED1C24"
+        barStyle="light-content"
+        translucent={false}
+      />
       <Stack.Navigator initialRouteName="SplashScreen">
         <Stack.Screen
           name="SplashScreen"
           component={SplashScreen}
-          options={{ headerShown: false }}
+          options={{headerShown: false}}
         />
         <Stack.Screen
           name="InitialScreen"
@@ -91,8 +91,6 @@ const AppNavigation = () => {
             },
           }}
         />
-
-
 
         <Stack.Screen
           name="LoginAsUser"
@@ -340,7 +338,6 @@ const AppNavigation = () => {
           }}
         />
 
-
         <Stack.Screen
           name="Privacy policy"
           component={PrivacyPolocy}
@@ -374,8 +371,6 @@ const AppNavigation = () => {
           name="TicketDetails"
           component={TicketDetails}
           options={{
-
-
             headerShown: false,
           }}
         />
@@ -393,9 +388,6 @@ const AppNavigation = () => {
             headerShown: false,
           }}
         />
-
-
-
 
         <Stack.Screen
           name="Notification"
@@ -426,24 +418,20 @@ const AppNavigation = () => {
           }}
         />
         <Stack.Screen
-          name='Chats'
+          name="Chats"
           component={ChatList}
           options={{
             headerShown: false,
-
           }}
         />
         <Stack.Screen
-          name='ChatDetail'
+          name="ChatDetail"
           component={ChatDetails}
           options={{
             headerShown: false,
-
           }}
         />
-
       </Stack.Navigator>
-
 
       {/* // Technician side Bottom Navigator  screen End  */}
     </NavigationContainer>

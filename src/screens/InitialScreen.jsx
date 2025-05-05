@@ -1,93 +1,81 @@
-import {StyleSheet, Text, View, TouchableOpacity} from 'react-native';
-import React from 'react';
-import {useTheme} from '../Context/ThemeContext';
-import {SafeAreaView} from 'react-native-safe-area-context';
+import { Text, View, TouchableOpacity } from 'react-native';
+import React, { useEffect } from 'react';
+import { useTheme } from '../Context/ThemeContext';
 import { useNavigation } from '@react-navigation/native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import InitialAppLogo from '../assets/Icons/appLogoForInitialScreen.svg';
-import Animated, {FadeIn,FadeOut} from 'react-native-reanimated';
-import tw from '../lib/tailwind';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import tw from '../lib/tailwind'; // ✅ twrnc import
 
-const  InitialScreen = () => {
+const InitialScreen = () => {
   const theme = useTheme();
   const navigation = useNavigation();
 
+
+  useEffect(() => {
+    const checkToken = async () => {
+      try {
+        const token = await AsyncStorage.getItem('token');
+        if (token) {
+          navigation.replace('UserInitialScreen');
+
+        }
+      } catch (error) {
+        console.error('Error fetching token:', error);
+      }
+    };
+  
+    checkToken();
+  }, []);
+  
   return (
-    <View
-    style={tw`px-4  `}
-    // Apply FadeIn animation
-    >
-   
-        {/* App Logo */}
-        <InitialAppLogo width={367} height={267} style={styles.logo} />
+    <View style={tw`flex-1 bg-white px-4 justify-center items-center`}>
+      {/* App Logo */}
+     <View style={tw`absolute top-35`}>
+     <InitialAppLogo width={367} height={267}  />
+     </View>
 
-        {/* Welcome Text */}
-        <Text style={[styles.welcomeText]}>
-          Welcome to Track'd. The worlds leading asset management and ticket
-          logging platform.
-        </Text>
+      {/* Welcome Text */}
+      <Text style={tw`text-center text-[14px] text-black opacity-80 font-semibold  mb-10 leading-[21px]`}>
+        Welcome to Track'd. The world's leading asset management and ticket logging platform.
+      </Text>
 
-        <View style={tw`justify-center items-center`}>
-             {/* Sign Up Button */}
+      {/* Buttons */}
+      <View style={tw`w-full justify-center items-center`}>
+        {/* Sign Up Button */}
         <TouchableOpacity
-          style={[styles.button, { borderColor: theme.primary}]}
-          onPress={() => {navigation.navigate("SignupAsUser")}}>
-          <Text style={[styles.buttonText, {color: theme.text}]}>SIGN UP AS A USER</Text>
+          style={[
+            tw`w-[90%] py-3 border rounded items-center mb-4`,
+            { borderColor: theme.primary }
+          ]}
+          onPress={() => navigation.navigate('SignupAsUser')}
+        >
+          <Text style={[
+            tw`text-[16px] font-bold leading-6`,
+            { color: theme.text }
+          ]}>
+            SIGN UP AS A USER
+          </Text>
         </TouchableOpacity>
 
         {/* Login Button */}
         <TouchableOpacity
-          style={[styles.button, { borderColor: theme.primary}]}
-          onPress={() => {navigation.navigate('LoginAsUser')}}>
-          <Text style={[styles.buttonText, {color: theme.text}]}>
+          style={[
+            tw`w-[90%] py-3 border rounded items-center`,
+            { borderColor: theme.primary }
+          ]}
+          onPress={() => navigation.navigate('LoginAsUser')}
+        >
+          <Text style={[
+            tw`text-[16px] font-bold leading-6`,
+            { color: theme.text }
+          ]}>
             LOGIN AS A TECHNICIAN
           </Text>
-
         </TouchableOpacity>
-           </View>
-
-     
-
+      </View>
     </View>
   );
 };
 
 export default InitialScreen;
-
-const styles = StyleSheet.create({
-  
-  animatedContainer: {
-    flex: 1,
-  },
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    paddingHorizontal: '10%',
-  },
-  
-  logo: {
-    resizeMode: 'contain',
-    marginTop: '40%',
-  },
-  welcomeText: {
-    fontSize: 14,
-    color: 'rgba(0,0,0,0.8)',
-    fontFamily: 'Poppins-SemiBold',
-    textAlign: 'center',
-    marginBottom: '10%',
-    marginTop: '-20%',
-    lineHeight:21
-  },
-  button: {
-    width: '90%',
-    paddingVertical: '3%',
-    borderWidth: 1,
-    borderRadius: 5,
-    alignItems: 'center',
-    marginBottom: '4%',
-  },
-  buttonText: {
-    fontSize: 16,
-    fontFamily: 'Poppins-Bold',
-    lineHeight: 24,
-  },
-});

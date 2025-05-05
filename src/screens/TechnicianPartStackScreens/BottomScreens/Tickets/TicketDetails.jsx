@@ -5,7 +5,11 @@ import tw from 'twrnc';
 import { Downarrow, rightArrow } from '../../../../assets/Icons/icons';
 import { SvgXml } from 'react-native-svg';
 
-const TicketDetails = ({ navigation }) => {
+const TicketDetails = ({ navigation, route }) => {
+  const { scannedData } = route.params;
+  console.log('scannedData', scannedData);
+  console.log('Route params:', route.params);
+
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState('Completed');
   const items = [
@@ -24,7 +28,7 @@ const TicketDetails = ({ navigation }) => {
 
   return (
     <ScrollView style={tw`bg-white flex-1`}>
-      <TicketDetailsHeader />
+      <TicketDetailsHeader  />
 
       <View style={tw`bg-[#FFE7E7] p-4 rounded-lg mx-[20px] my-2  mt-6`}>
         <Text style={tw`text-[14px] font-bold text-[#FF6769] mb-1`}>ViewSonic monitor</Text>

@@ -91,6 +91,7 @@ const LoginScreenForUser = () => {
       const result = await uselogdin({email, password});
       console.log('Login Result:', result);
       if(result.error){
+        console.log('Login Error:', result.error);
         Alert.alert('Login Failed', result.error?.message);
       }
       if (result?.data?.access_token) {

@@ -4,7 +4,7 @@ export const TicketApiSlice = api.injectEndpoints({
     endpoints: builder => ({
         getTickets: builder.query({
             query: () => ({
-                url: `/ticket_list`,
+                url: `/ticket-list`,
             }),
         }),
     }),

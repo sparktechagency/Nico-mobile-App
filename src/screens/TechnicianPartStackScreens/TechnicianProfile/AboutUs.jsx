@@ -1,8 +1,12 @@
 import { View, Text } from 'react-native'
 import React from 'react'
 import tw from '../../../lib/tailwind'
+import { useGetAboutUsQuery } from '../../../redux/apiSlices/FaqApislice'
 
 const AboutUs = () => {
+
+  const {data}= useGetAboutUsQuery();
+  console.log('data',data);
 
   const aboutData = [
     {
@@ -29,13 +33,13 @@ const AboutUs = () => {
         <Text style={tw`text-[20px] text-[#000000] font-bold mb-4`}>
           About Us
         </Text>
-        {aboutData.map((item) => (
-          <View key={item.id} style={tw`mb-4`}>
+
+          <View  style={tw`mb-4`}>
             <Text style={tw`text-[16px] text-[#4A4A4A] font-normal`}>
-              {item.details}
+              {data?.message.description}
             </Text>
           </View>
-        ))}
+  
       </View>
     </View>
   )

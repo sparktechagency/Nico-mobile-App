@@ -1,7 +1,10 @@
 import React from 'react';
-import { StyleSheet, Text, View, FlatList, TouchableOpacity } from 'react-native';
+import {StyleSheet, Text, View, FlatList, TouchableOpacity} from 'react-native';
+import {useGetAuthuserNotificationQuery} from '../../redux/apiSlices/authApiSlice';
 
 const Notification = () => {
+  const {data, isLoading, isError} = useGetAuthuserNotificationQuery();
+  console.log('notification', data);
   const notifications = [
     {
       id: '1',
@@ -41,34 +44,31 @@ const Notification = () => {
     },
   ];
 
-  const NotificationItem = ({ item }) => (
-
+  const NotificationItem = ({item}) => (
     <TouchableOpacity>
-      
-    <View style={styles.itemContainer}>
-      <View >
-        <Text style={styles.title}>{item.title}</Text>
-        <Text style={styles.company}>{item.company}</Text>
-        <Text style={styles.user}>{item.user}</Text>
+      <View style={styles.itemContainer}>
+        <View>
+          <Text style={styles.title}>{item.title}</Text>
+          <Text style={styles.company}>{item.company}</Text>
+          <Text style={styles.user}>{item.user}</Text>
+        </View>
+        <View>
+          <Text style={styles.date}>{item.date}</Text>
+          <Text style={styles.date}>{item.time}</Text>
+        </View>
 
-
+        <View>
+          {item.amount && (
+            <Text
+              style={[
+                styles.amount,
+                item.amount.startsWith('-') && styles.negative,
+              ]}>
+              {item.amount}
+            </Text>
+          )}
+        </View>
       </View>
-      <View>
-        <Text style={styles.date}>{item.date}</Text>
-        <Text style={styles.date}>{item.time}</Text>
-      </View>
-
-      <View >
-
-
-        {item.amount && (
-          <Text style={[styles.amount, item.amount.startsWith('-') && styles.negative]}>
-            {item.amount}
-          </Text>
-        )}
-      </View>
-
-    </View>
     </TouchableOpacity>
   );
 
@@ -76,13 +76,13 @@ const Notification = () => {
     <View style={styles.container}>
       <FlatList
         data={notifications}
-        renderItem={({ item }) => <NotificationItem item={item} />}
+        renderItem={({item}) => <NotificationItem item={item} />}
         keyExtractor={item => item.id}
         contentContainerStyle={styles.listContent}
         removeClippedSubviews={false}
       />
     </View>
-  ); 
+  );
 };
 
 const styles = StyleSheet.create({
@@ -130,7 +130,7 @@ const styles = StyleSheet.create({
   company: {
     fontSize: 14,
     color: '#000000',
-    fontWeight:'medium',
+    fontWeight: 'medium',
     paddingBottom: 4,
   },
   user: {

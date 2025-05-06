@@ -10,9 +10,12 @@ import {
 } from 'react-native';
 import { useForm, Controller } from 'react-hook-form';
 import tw from '../../../lib/tailwind';
-import { useChangePasswordMutation } from '../../../redux/apiSlices/authApiSlice';
+import { useChangePasswordMutation, useGetOwnProfileQuery } from '../../../redux/apiSlices/authApiSlice';
+import { editicon } from '../../../assets/Icons/icons';
+import { SvgXml } from 'react-native-svg';
 
 const ChangePassword = () => {
+  const { data, error, isLoading: profileLoading } = useGetOwnProfileQuery();
   const [changePassword, { isLoading }] = useChangePasswordMutation();
   const {
     control,
@@ -47,22 +50,43 @@ const ChangePassword = () => {
     }
   };
 
+
+  if(profileLoading){
+    return (
+      <View style={tw`flex-1 items-center justify-center`}>
+        <Text>Loading...</Text>
+      </View>
+    );
+  }
+
   return (
     <ScrollView style={tw`bg-white h-full`}>
       <View style={tw`p-4`}>
-        <View style={tw`bg-[#F0F0F0] p-4 rounded-lg items-center`}>
-          <Image
-            source={require('../../../assets/Icons/avater.png')}
-            style={tw`w-[70px] h-[70px] rounded-full`}
-          />
-          <Text style={tw`text-[16px] text-[#000000] font-semibold mt-2`}>
-            Md. Sazzat Hasan
-          </Text>
-          <Text style={tw`text-[12px] text-[#878787] font-medium`}>
-            example@gmail.com
-          </Text>
-        </View>
-      </View>
+                <View style={tw`bg-[#F0F0F0] p-4 rounded-lg items-center`}>
+                    <TouchableOpacity >
+                    
+                            <View style={tw`w-[100px] h-[100px] rounded-full bg-gray-300 justify-center items-center`}>
+                               
+                                <Image
+                                    source={{ uri: data?.data?.image }}
+                                    style={tw`w-full h-full rounded-full`}
+                                />
+
+                                <TouchableOpacity
+                                   
+                                    style={tw`absolute bottom-0 right-0 w-8 h-8  bg-white rounded-full items-center justify-center`}
+                                >
+                                   
+                                        <SvgXml xml={editicon} />
+                                  
+                                </TouchableOpacity>
+                            </View>
+          
+                    </TouchableOpacity>
+                    <Text style={tw`text-[16px] text-[#000000] font-semibold mt-2`}>{ data?.data?.name}</Text>
+                    <Text style={tw`text-[12px] text-[#878787] font-medium`}>{data?.data?.email}</Text>
+                </View>
+            </View>
 
       <View style={tw`p-4 gap-2`}>
         <View>

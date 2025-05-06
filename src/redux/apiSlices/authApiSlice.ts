@@ -24,9 +24,7 @@ export const AuthApiSlice = api.injectEndpoints({
       invalidatesTags: ['auth'],
     }),
 
-   
-
-    // EKTA OTP FORM NIYE VERIFY KORBE 
+    // EKTA OTP FORM NIYE VERIFY KORBE
     verifyOTP: builder.mutation({
       query: data => {
         console.log('from rtk: ', data);
@@ -67,8 +65,7 @@ export const AuthApiSlice = api.injectEndpoints({
       },
     }),
 
-
-    // change passowrd 
+    // change passowrd
     changePassword: builder.mutation({
       query: data => {
         return {
@@ -76,12 +73,10 @@ export const AuthApiSlice = api.injectEndpoints({
           method: 'POST',
           body: data,
         };
-        
       },
       invalidatesTags: ['auth'],
     }),
 
-  
     // get profile
     getOwnProfile: builder.query({
       query: () => ({
@@ -90,8 +85,24 @@ export const AuthApiSlice = api.injectEndpoints({
       providesTags: ['auth'],
     }),
 
+    updateProfile: builder.mutation({
+      query: formData => ({
+        url: '/auth/profile-update',
+        method: 'POST',
+        body: formData,
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      }),
+      invalidatesTags: ['auth'],
+    }),
 
- 
+    getAuthuserNotification: builder.query({
+      query: () => ({
+        url: `/notifications`,
+      }),
+      providesTags: ['auth'],
+    }),
   }),
 });
 
@@ -103,6 +114,7 @@ export const {
   useForgetPasswordMutation,
   useChangePasswordMutation,
   useGetOwnProfileQuery,
-  useResetpasswordMutation
-
+  useResetpasswordMutation,
+  useUpdateProfileMutation,
+  useGetAuthuserNotificationQuery,
 } = AuthApiSlice;

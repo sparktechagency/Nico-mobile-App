@@ -60,8 +60,8 @@ const useTheme = (): Theme => ({
 
 // Main Component
 const LoginScreenForUser = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('nicobhar@yopmail.com');
+  const [password, setPassword] = useState('amimewif4@mongrec.com');
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState('');
 

@@ -6,9 +6,21 @@ export const TicketApiSlice = api.injectEndpoints({
             query: () => ({
                 url: `/ticket-list`,
             }),
+
+            providesTags: ['ticket'],
         }),
+
+        createATicket: builder.mutation({
+            query: (data) => ({
+                url: `/create-ticket`,
+                method: 'POST',
+                body: data,
+            }),
+
+            invalidatesTags: ['ticket'],
+        })
     }),
     overrideExisting: false,
 });
 
-export const { useGetTicketsQuery } = TicketApiSlice;
+export const { useGetTicketsQuery, useCreateATicketMutation } = TicketApiSlice;

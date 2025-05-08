@@ -11,7 +11,7 @@ const Notification = () => {
   const {data, isLoading, isError} = useGetAuthuserNotificationQuery();
   const [readNotification, {isLoading: isReadLoading, isError: isReadError}] =
     useReadNotificationMutation();
-  console.log('notification', data);
+
   const handleReadNotification = useCallback(
     async id => {
       try {

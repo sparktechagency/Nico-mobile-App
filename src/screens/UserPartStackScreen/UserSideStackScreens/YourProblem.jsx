@@ -22,12 +22,12 @@ const YourProblem = ({navigation, route}) => {
   const [createATicket, {isLoading}] = useCreateATicketMutation();
   const handleSend = async () => {
     const sendData = {
-      asset_id: JSON.stringify(data?.data),
+      asset_id: String(data?.data?.id),
       problem: problemDescription,
     };
 
     try {
-      const response = await createATicket(sendData).unwrap(); // <-- directly pass object
+      const response = await createATicket(sendData).unwrap();
 
       console.log('Response:', response);
 

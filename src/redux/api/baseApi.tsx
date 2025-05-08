@@ -25,14 +25,17 @@ const baseQueryWithRath: BaseQueryFn<BaseQueryArgs, unknown, unknown> = async (
       data: args.body,
       headers: {
         ...args.headers,
-        ...(token && { Authorization: `Bearer ${JSON.parse(token)}` }), // ✅ smart way
+        ...(token && { Authorization: `Bearer ${JSON.parse(token)}` }),
       },
     });
+
 
     if (typeof result?.data === 'string') {
       const withCurly = (result.data += '}');
       return { data: JSON.parse(withCurly) };
     }
+
+
 
     if (typeof result?.data === 'object') {
       return { data: result?.data };
@@ -72,10 +75,11 @@ export const api = createApi({
     'quests',
     'setting',
     'subscription',
+    'notificasion'
   ],
 });
 
-export const ImageUrl = 'http://182.252.68.227:10000'; 
+export const ImageUrl = 'http://182.252.68.227:10000';
 
 export const makeImage = (url: string) => {
   if (url) {

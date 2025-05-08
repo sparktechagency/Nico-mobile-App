@@ -112,31 +112,29 @@ const EditProfile = () => {
 
   return (
     <ScrollView style={tw`bg-white h-full`}>
-      <View style={tw`p-4 items-center`}>
+      <View style={tw`p-4`}>
         <View style={tw`bg-[#F0F0F0] p-4 rounded-lg items-center`}>
           <TouchableOpacity onPress={openGallery}>
             <View
-              style={tw`w-[100px] h-[100px] rounded-full bg-gray-300 justify-center items-center overflow-hidden`}>
-              {imageUri ? (
-                <Image
-                  source={{uri: imageUri}}
-                  style={tw`w-full h-full`}
-                  resizeMode="cover"
-                />
-              ) : (
-                <Text style={tw`text-gray-500`}>No Image</Text>
-              )}
+              style={tw`w-[100px] h-[100px] rounded-full bg-gray-300 justify-center items-center`}>
+              <Image
+                source={{uri: data?.data?.image}}
+                style={tw`w-full h-full rounded-full`}
+              />
+
+              <TouchableOpacity
+                onPress={() => pickImage(true)}
+                style={tw`absolute bottom-0 right-0 w-8 h-8  bg-white rounded-full items-center justify-center`}>
+                <SvgXml xml={editicon} />
+              </TouchableOpacity>
             </View>
           </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={() => pickImage(true)}
-            style={tw`mt-2 flex-row items-center`}>
-            <SvgXml xml={editicon} width={16} height={16} />
-            <Text style={tw`ml-1 text-[12px] text-[#878787]`}>
-              {imageUri ? 'Change Photo' : 'Add Photo'}
-            </Text>
-          </TouchableOpacity>
+          <Text style={tw`text-[16px] text-[#000000] font-semibold mt-2`}>
+            {data?.data?.name}
+          </Text>
+          <Text style={tw`text-[12px] text-[#878787] font-medium`}>
+            {data?.data?.email}
+          </Text>
         </View>
       </View>
 

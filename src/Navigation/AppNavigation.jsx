@@ -47,13 +47,18 @@ import UserCallsDetails from '../screens/UserPartStackScreen/UserSideStackScreen
 import ChatList from '../screens/UserPartStackScreen/UserSideStackScreens/ChatList';
 import {StatusBar} from 'react-native';
 import NewUserOtpVerify from '../screens/UserPartStackScreen/UserAuthenticationScreens/NewUserOtpVerify';
+import SelectAtechnician from '../screens/UserPartStackScreen/UserSideStackScreens/SelectAtechnician';
 // import Icon from 'react-native-vector-icons/Ionicons';
 
 const Stack = createNativeStackNavigator();
 
 const AppNavigation = () => {
   return (
-    <NavigationContainer>
+    <NavigationContainer
+      onStateChange={state => {
+        // Helps prevent navigation state corruption
+        if (!state) return;
+      }}>
       <StatusBar
         backgroundColor="#ED1C24"
         barStyle="light-content"
@@ -70,11 +75,10 @@ const AppNavigation = () => {
           component={InitialScreen}
           options={{
             headerShown: false,
-            animation: 'none',
-            presentation: 'transparentModal', // Fade transition effect
+            animationEnabled: false, // Disable all animations
+            gestureEnabled: false, // Disable gestures
           }}
         />
-
         {/* User side authentication screens start */}
 
         <Stack.Screen
@@ -239,10 +243,10 @@ const AppNavigation = () => {
             headerShown: true,
             animation: 'none',
             headerTitle: '', // Hide title
-            headerShadowVisible: false, // Removes the bottom shadow (for native stack)
+            headerShadowVisible: false,
             headerStyle: {
-              elevation: 0, // Removes shadow on Android
-              shadowOpacity: 0, // Removes shadow on iOS
+              elevation: 0,
+              shadowOpacity: 0,
             },
           }}
         />
@@ -420,6 +424,13 @@ const AppNavigation = () => {
         <Stack.Screen
           name="Chats"
           component={ChatList}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="SelectAtechnician"
+          component={SelectAtechnician}
           options={{
             headerShown: false,
           }}

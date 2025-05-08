@@ -8,20 +8,25 @@ import {
   SafeAreaView,
   Alert,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
 import tw from '../../../lib/tailwind';
-import Svg, { SvgXml } from 'react-native-svg';
-import { aboutIcon, changepaswordIcon, faqIcon, LocationIcon, logoutIcon, privacyIcon, rightIcon, userIcon } from '../../../assets/Icons/icons';
+import Svg, {SvgXml} from 'react-native-svg';
+import {
+  aboutIcon,
+  changepaswordIcon,
+  faqIcon,
+  LocationIcon,
+  logoutIcon,
+  privacyIcon,
+  rightIcon,
+  userIcon,
+} from '../../../assets/Icons/icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useGetOwnProfileQuery } from '../../../redux/apiSlices/authApiSlice';
+import {useGetOwnProfileQuery} from '../../../redux/apiSlices/authApiSlice';
 
+const TechnicianProfile = ({navigation}) => {
+  const {data, error, isLoading} = useGetOwnProfileQuery();
 
-
-const TechnicianProfile = () => {
-  const navigation = useNavigation();
-  const { data, error, isLoading } = useGetOwnProfileQuery();
-
-console.log('data',data);
+  console.log('data', data);
   if (error) {
     console.log('error', error);
   }
@@ -64,96 +69,72 @@ console.log('data',data);
       icon: logoutIcon,
       title: 'Logout',
     },
-  ];const handleMenuPress = async(item) => {
+  ];
+  const handleMenuPress = async item => {
     if (item.title === 'Logout') {
-      Alert.alert(
-        'Logout',            
-        'Are you sure you want to logout?', 
-        [
-          {
-            text: 'Cancel',
-            style: 'cancel',
+      Alert.alert('Logout', 'Are you sure you want to logout?', [
+        {
+          text: 'Cancel',
+        },
+        {
+          text: 'Logout',
+          onPress: async () => {
+            try {
+              await AsyncStorage.removeItem('token');
+              navigation.replace('InitialScreen');
+            } catch (error) {
+              console.log('Logout Error:', error);
+            }
           },
-          {
-            text: 'Logout',
-            onPress: async () => {
-              try {
-                await AsyncStorage.removeItem('token');
-                navigation.reset({
-                  index: 0,
-                  routes: [{ name: 'InitialScreen' }],
-                });
-              } catch (error) {
-                console.log('Logout Error:', error);
-              }
-            },
-            style: 'destructive',
-          },
-        ],
-        { cancelable: true }
-      );
-     
-
+          style: 'destructive',
+        },
+      ]);
     }
-  
+
     if (item.route) {
       try {
         navigation.navigate(item.route);
       } catch (error) {
-        console.error("Navigation error:", error);
+        console.error('Navigation error:', error);
       }
     }
   };
-  
 
   const renderHeader = () => (
     <View style={tw`px-4 py-6 bg-white flex-row items-center`}>
       <Image
-      source={{ uri: data?.data?.image }}
+        source={{uri: data?.data?.image}}
         style={tw`w-[50px] h-[50px] rounded-full mr-2`}
       />
       <View style={tw`flex-1  flex-row justify-between`}>
-
         <View>
           <Text style={tw`text-[16px] font-semibold text-[#000000] `}>
-          {data?.data?.name}
+            {data?.data?.name}
           </Text>
-          <Text style={tw`text-sm text-gray-500 `}>
-            {data?.data?.email}
-          </Text>
+          <Text style={tw`text-sm text-gray-500 `}>{data?.data?.email}</Text>
         </View>
 
         <View style={tw`flex flex-row items-center gap-2`}>
-
-
-
-
-          <View  >
-            <Text style={tw`text-sm text-gray-500`}>
-             Location
-            </Text>
-            <Text style={tw`text-[12px] font-medium text-[#000000] text-center`}>
+          <View>
+            <Text style={tw`text-sm text-gray-500`}>Location</Text>
+            <Text
+              style={tw`text-[12px] font-medium text-[#000000] text-center`}>
               {data?.data?.address}
             </Text>
-
           </View>
-          <View >
+          <View>
             <SvgXml xml={LocationIcon} />
-
           </View>
         </View>
-
-
       </View>
     </View>
   );
 
-  const renderMenuItem = ({ item }) => (
+  const renderMenuItem = ({item}) => (
     <TouchableOpacity
       style={tw`mx-4 mb-3 bg-red-50 rounded-xl flex-row items-center justify-between p-4`}
       onPress={() => handleMenuPress(item)}
-      activeOpacity={0.7}
-    >
+      activeOpacity={0.7}>
       <View style={tw`flex-row items-center`}>
         <Text style={tw`text-xl mr-4 w-6`}>
           <SvgXml xml={item.icon} />
@@ -167,22 +148,21 @@ console.log('data',data);
   );
 
   return (
-<SafeAreaView style={tw`flex-1 bg-white`}>
+    <>
       <FlatList
         data={menuItems}
         renderItem={renderMenuItem}
-        keyExtractor={item => item.id.toString()}
+        // keyExtractor={item => item.id.toString()}
         ListHeaderComponent={renderHeader}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={tw`pt-2 pb-6`}
-        removeClippedSubviews={false}  
+        contentContainerStyle={tw`pt-2 pb-6 bg-white h-full`}
+        removeClippedSubviews={false}
       />
-    </SafeAreaView>
+    </>
   );
 };
 
 export default TechnicianProfile;
-
 
 // import { View, Text } from 'react-native'
 // import React from 'react'

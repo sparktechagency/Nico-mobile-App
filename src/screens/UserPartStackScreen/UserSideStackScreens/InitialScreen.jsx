@@ -1,4 +1,3 @@
-
 // import React from 'react';
 // import { useState, useEffect } from "react";
 // import { useNavigation } from '@react-navigation/native';
@@ -60,8 +59,6 @@
 //     },
 //   ];
 
-
-
 //   const [scannedData, setScannedData] = useState("");
 //   const [hasPermission, setHasPermission] = useState(false);
 //   const [isScanning, setIsScanning] = useState(false); // To control scanning state
@@ -78,7 +75,6 @@
 //       </View>
 //     );
 //   }
-  
 
 //   if(isLoading){
 //     return (
@@ -129,7 +125,6 @@
 //     );
 //   }
 
-
 //   const renderRunningTicket = ({ item }) => (
 //     <TouchableOpacity
 //       style={tw`shadow-lg bg-white p-4 rounded-lg flex-row items-center justify-between mb-4 mx-2`}
@@ -179,14 +174,13 @@
 //           </Text>
 //         </TouchableOpacity>
 //         {/* <Button
-      
-//         title={isScanning ? "Stop Scanning" : "Start Scanning"} 
-//         onPress={() => setIsScanning(prevState => !prevState)} 
+
+//         title={isScanning ? "Stop Scanning" : "Start Scanning"}
+//         onPress={() => setIsScanning(prevState => !prevState)}
 //       /> */}
 //         {isScanning && <QRCodeScanner onSuccess={onSuccess} />}
 //         {scannedData ? <Text style={styles.scannedText}>Scanned: {scannedData}</Text> : null}
 //       </View>
-
 
 //       <View>
 //         <Text style={styles.sectionTitle}>Open calls</Text>
@@ -316,35 +310,42 @@
 
 // export default InitialScreenUser;
 
-
-
-
 import React from 'react';
-import { useState, useEffect } from "react";
-import { useNavigation } from '@react-navigation/native';
-import { Button, FlatList, StyleSheet, Text, TouchableOpacity, View, PermissionsAndroid, Platform, StatusBar, ScrollView } from 'react-native';
-import { SvgXml } from 'react-native-svg';
+import {useState, useEffect} from 'react';
+import {useNavigation} from '@react-navigation/native';
+import {
+  Button,
+  FlatList,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  PermissionsAndroid,
+  Platform,
+  StatusBar,
+  ScrollView,
+} from 'react-native';
+import {SvgXml} from 'react-native-svg';
 import tw from 'twrnc';
-import { listNavigationIcon, qrscan } from '../../../assets/Icons/icons';
+import {listNavigationIcon, qrscan} from '../../../assets/Icons/icons';
 import UserHeader from '../../../lib/components/userPartScreen/UserHeader';
-import QRCodeScanner from "./QRScanner";
-import { useGetTicketsQuery } from '../../../redux/apiSlices/ticketApi';
-
+import QRCodeScanner from './QRScanner';
+import {useGetTicketsQuery} from '../../../redux/apiSlices/ticketApi';
 
 const InitialScreenUser = () => {
   const navigation = useNavigation();
-  const [scannedData, setScannedData] = useState("");
+  const [scannedData, setScannedData] = useState('');
   const [hasPermission, setHasPermission] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
-  const { data, error, isLoading } = useGetTicketsQuery();
+  const {data, error, isError, isLoading} = useGetTicketsQuery();
 
   // Safely process API data to separate open and closed tickets
   const tickets = data?.data?.data || [];
-  const openTickets = tickets.filter(ticket => 
-    ['New', 'Assigned'].includes(ticket.ticket_status)
+  const openTickets = tickets.filter(ticket =>
+    ['New', 'Assigned'].includes(ticket.ticket_status),
   );
-  const closedTickets = tickets.filter(ticket => 
-    ['Completed', 'Closed'].includes(ticket.ticket_status)
+  const closedTickets = tickets.filter(ticket =>
+    ['Completed', 'Closed'].includes(ticket.ticket_status),
   );
 
   const requestCameraPermission = async () => {
@@ -353,12 +354,12 @@ const InitialScreenUser = () => {
         const granted = await PermissionsAndroid.request(
           PermissionsAndroid.PERMISSIONS.CAMERA,
           {
-            title: "Camera Permission",
-            message: "App needs camera permission to scan QR codes",
-            buttonNeutral: "Ask Me Later",
-            buttonNegative: "Cancel",
-            buttonPositive: "OK"
-          }
+            title: 'Camera Permission',
+            message: 'App needs camera permission to scan QR codes',
+            buttonNeutral: 'Ask Me Later',
+            buttonNegative: 'Cancel',
+            buttonPositive: 'OK',
+          },
         );
         setHasPermission(granted === PermissionsAndroid.RESULTS.GRANTED);
       } catch (err) {
@@ -372,18 +373,24 @@ const InitialScreenUser = () => {
 
   useEffect(() => {
     requestCameraPermission();
+
+    return () => {
+      // Clean up any resources or subscriptions here
+    };
   }, []);
 
-  const onSuccess = (e) => {
+  const onSuccess = e => {
     setScannedData(e.data);
     setIsScanning(false);
-    navigation.navigate('TicketDetails', { scannedData: e.data });
+    navigation.navigate('TicketDetails', {scannedData: e.data});
   };
 
-  if (error) {
+  if (isError) {
     return (
       <View style={styles.container}>
-        <Text style={styles.centerText}>Error loading tickets: {error.message || 'Unknown error'}</Text>
+        <Text style={styles.centerText}>
+          Error loading tickets: {error?.message || 'Unknown error'}
+        </Text>
       </View>
     );
   }
@@ -405,24 +412,32 @@ const InitialScreenUser = () => {
     );
   }
 
-  const renderOpenTicket = ({ item }) => (
+  const renderOpenTicket = ({item}) => (
     <TouchableOpacity
       style={[styles.card, tw`bg-white p-4 rounded-lg mb-4 mx-2`]}
-      onPress={() => navigation.navigate('Details', { data: item })}
-    >
+      onPress={() => navigation.navigate('Details', {data: item})}>
       <View style={styles.ticketContent}>
         <View style={styles.leftSection}>
-          <Text style={[styles.text, styles.title]}>{item.asset?.product || 'Unknown Product'}</Text>
-          <Text style={styles.text}>Serial: {item.asset?.serial_number || 'N/A'}</Text>
+          <Text style={[styles.text, styles.title]}>
+            {item.asset?.product || 'Unknown Product'}
+          </Text>
+          <Text style={styles.text}>
+            Serial: {item.asset?.serial_number || 'N/A'}
+          </Text>
           <Text style={styles.text}>Status: {item.ticket_status}</Text>
         </View>
         <View style={styles.rightSection}>
-          <Text style={styles.date}>{new Date(item.created_at).toLocaleDateString()}</Text>
+          <Text style={styles.date}>
+            {new Date(item.created_at).toLocaleDateString()}
+          </Text>
           <View style={styles.statusContainer}>
-            <View style={[
-              styles.statusBadge,
-              item.ticket_status === 'Assigned' ? styles.inProgressBadge : styles.newBadge
-            ]}>
+            <View
+              style={[
+                styles.statusBadge,
+                item.ticket_status === 'Assigned'
+                  ? styles.inProgressBadge
+                  : styles.newBadge,
+              ]}>
               <Text style={styles.statusText}>
                 {item.ticket_status === 'Assigned' ? 'In Progress' : 'New'}
               </Text>
@@ -434,19 +449,24 @@ const InitialScreenUser = () => {
     </TouchableOpacity>
   );
 
-  const renderClosedTicket = ({ item }) => (
+  const renderClosedTicket = ({item}) => (
     <TouchableOpacity
       style={[styles.card, tw`bg-white p-4 rounded-lg mb-4 mx-2`]}
-      onPress={() => navigation.navigate('Details', { ticketId: item.id })}
-    >
+      onPress={() => navigation.navigate('Details', {data: item})}>
       <View style={styles.ticketContent}>
         <View style={styles.leftSection}>
-          <Text style={[styles.text, styles.title]}>{item.asset?.product || 'Unknown Product'}</Text>
-          <Text style={styles.text}>Serial: {item.asset?.serial_number || 'N/A'}</Text>
+          <Text style={[styles.text, styles.title]}>
+            {item.asset?.product || 'Unknown Product'}
+          </Text>
+          <Text style={styles.text}>
+            Serial: {item.asset?.serial_number || 'N/A'}
+          </Text>
           <Text style={styles.text}>Status: {item.ticket_status}</Text>
         </View>
         <View style={styles.rightSection}>
-          <Text style={styles.date}>{new Date(item.created_at).toLocaleDateString()}</Text>
+          <Text style={styles.date}>
+            {new Date(item.created_at).toLocaleDateString()}
+          </Text>
           <View style={styles.statusContainer}>
             <View style={[styles.statusBadge, styles.completedBadge]}>
               <Text style={styles.statusText}>Completed</Text>
@@ -462,26 +482,27 @@ const InitialScreenUser = () => {
     <ScrollView style={styles.container}>
       <StatusBar barStyle="light-content" />
       <UserHeader />
-      
+
       {/* QR Scanner Section */}
       <View style={tw`px-2`}>
-        <TouchableOpacity 
-          onPress={() => setIsScanning(true)} 
-          style={tw`border-2 border-dashed border-gray-300 rounded-lg items-center justify-center p-4 my-4`}
-        >
+        <TouchableOpacity
+          onPress={() => setIsScanning(true)}
+          style={tw`border-2 border-dashed border-gray-300 rounded-lg items-center justify-center p-4 my-4`}>
           <SvgXml xml={qrscan} width={40} height={40} />
-          <Text style={tw`mt-2 text-gray-600`}>Scan the QR code of your device</Text>
+          <Text style={tw`mt-2 text-gray-600`}>
+            Scan the QR code of your device
+          </Text>
         </TouchableOpacity>
-        
+
         {isScanning && (
           <View style={styles.scannerContainer}>
-            <QRCodeScanner 
+            <QRCodeScanner
               onSuccess={onSuccess}
               onCancel={() => setIsScanning(false)}
             />
           </View>
         )}
-        
+
         {scannedData ? (
           <Text style={styles.scannedText}>Scanned: {scannedData}</Text>
         ) : null}
@@ -489,7 +510,9 @@ const InitialScreenUser = () => {
 
       {/* Open Tickets Section */}
       <View style={tw`px-2`}>
-        <Text style={styles.sectionTitle}>Open Calls ({openTickets.length})</Text>
+        <Text style={styles.sectionTitle}>
+          Open Calls ({openTickets.length})
+        </Text>
         {openTickets.length > 0 ? (
           <FlatList
             data={openTickets}
@@ -507,17 +530,18 @@ const InitialScreenUser = () => {
       {/* Closed Tickets Section */}
       <View style={tw`px-2 mt-4`}>
         <View style={tw`flex-row justify-between items-center mb-2`}>
-          <Text style={styles.sectionTitle}>Closed Calls ({closedTickets.length})</Text>
+          <Text style={styles.sectionTitle}>
+            Closed Calls ({closedTickets.length})
+          </Text>
           {closedTickets.length > 3 && (
-            <TouchableOpacity 
-              onPress={() => navigation.navigate('ClosedTickets')} 
-              style={tw`border border-red-400 rounded-md px-3 py-1`}
-            >
+            <TouchableOpacity
+              onPress={() => navigation.navigate('ClosedTickets')}
+              style={tw`border border-red-400 rounded-md px-3 py-1`}>
               <Text style={tw`text-gray-700`}>See all</Text>
             </TouchableOpacity>
           )}
         </View>
-        
+
         {closedTickets.length > 0 ? (
           <FlatList
             data={closedTickets.slice(0, 3)}
@@ -543,7 +567,7 @@ const styles = StyleSheet.create({
   },
   card: {
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: {width: 0, height: 2},
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,

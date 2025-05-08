@@ -96,13 +96,6 @@ export const AuthApiSlice = api.injectEndpoints({
       }),
       invalidatesTags: ['auth'],
     }),
-
-    getAuthuserNotification: builder.query({
-      query: () => ({
-        url: `/notifications`,
-      }),
-      providesTags: ['auth'],
-    }),
   }),
 });
 
@@ -116,5 +109,4 @@ export const {
   useGetOwnProfileQuery,
   useResetpasswordMutation,
   useUpdateProfileMutation,
-  useGetAuthuserNotificationQuery,
 } = AuthApiSlice;

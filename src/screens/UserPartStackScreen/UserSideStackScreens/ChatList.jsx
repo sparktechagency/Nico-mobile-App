@@ -1,9 +1,16 @@
-import { StyleSheet, Text, View, FlatList, Image, TouchableOpacity } from 'react-native';
+import {
+  StyleSheet,
+  Text,
+  View,
+  FlatList,
+  Image,
+  TouchableOpacity,
+} from 'react-native';
 import React from 'react';
 import HeaderOnlySerch from '../../../lib/components/HeaderOnlySerch';
-import { useNavigation } from '@react-navigation/native';
-import { NavigationIcon } from '../../../assets/Icons/icons';
-import { SvgXml } from 'react-native-svg';
+import {useNavigation} from '@react-navigation/native';
+import {addicon, NavigationIcon} from '../../../assets/Icons/icons';
+import {SvgXml} from 'react-native-svg';
 
 const ChatList = () => {
   const navigation = useNavigation();
@@ -11,68 +18,69 @@ const ChatList = () => {
   const chatesData = [
     {
       id: 1,
-      name: "Organization",
+      name: 'Organization',
       image: require('../../../assets/Icons/avater.png'),
-      time: "10:00 AM",
-      messageCount: 2
+      time: '10:00 AM',
+      messageCount: 2,
     },
     {
       id: 2,
-      name: "Location employee",
+      name: 'Location employee',
       image: require('../../../assets/Icons/avater.png'),
-      time: "10:00 AM",
-      messageCount: 6
+      time: '10:00 AM',
+      messageCount: 6,
     },
     {
-      id: 1,
-      name: "Organization",
+      id: 3,
+      name: 'Organization',
       image: require('../../../assets/Icons/avater.png'),
-      time: "10:00 AM",
-      messageCount: 7
+      time: '10:00 AM',
+      messageCount: 7,
     },
     {
-      id: 2,
-      name: "Location employee",
+      id: 4,
+      name: 'Location employee',
       image: require('../../../assets/Icons/avater.png'),
-      time: "10:00 AM",
-      messageCount: 8
-    }
+      time: '10:00 AM',
+      messageCount: 8,
+    },
   ];
 
   return (
-    <View style={{ flex: 1 , backgroundColor: 'white'}}>
+    <View style={styles.container}>
       <HeaderOnlySerch />
-      <View style={{ padding: 20 }}>
-
-        
+      <View style={styles.contentContainer}>
         <FlatList
           data={chatesData}
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={({ item }) => (
-            <TouchableOpacity onPress={() => navigation.navigate('ChatDetail', { id: item.id })}>
+          keyExtractor={item => item.id.toString()}
+          renderItem={({item}) => (
+            <TouchableOpacity
+              onPress={() => navigation.navigate('ChatDetail', {id: item.id})}>
               <View style={styles.chatCard}>
                 <Image source={item.image} style={styles.avatar} />
 
-                <View style={{flex: 1}}>
-
-                <View style={styles.flexitem}>
-                  <Text style={styles.chatName}>{item.name}</Text>
-                  <Text style={styles.chatTime}>{item.time}</Text>
-                
-                </View>
-                <View style={styles.flexitem}>
-                  <Text style={styles.messageCount}>{item.messageCount} new messages</Text>
-
-              <Text>
-                <SvgXml xml={NavigationIcon} />
-              </Text>
-                </View>
+                <View style={styles.chatInfo}>
+                  <View style={styles.flexitem}>
+                    <Text style={styles.chatName}>{item.name}</Text>
+                    <Text style={styles.chatTime}>{item.time}</Text>
+                  </View>
+                  <View style={styles.flexitem}>
+                    <Text style={styles.messageCount}>
+                      {item.messageCount} new messages
+                    </Text>
+                    <SvgXml xml={NavigationIcon} />
+                  </View>
                 </View>
               </View>
             </TouchableOpacity>
           )}
           removeClippedSubviews={false}
         />
+        <TouchableOpacity
+          onPress={() => navigation.navigate('SelectAtechnician')}
+          style={styles.addButton}>
+          <SvgXml xml={addicon} width={50} height={50} />
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -81,6 +89,14 @@ const ChatList = () => {
 export default ChatList;
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: 'white',
+  },
+  contentContainer: {
+    padding: 20,
+    flex: 1,
+  },
   chatCard: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -89,17 +105,19 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     marginBottom: 10,
     shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
     shadowOpacity: 0.1,
     shadowRadius: 5,
     elevation: 3,
   },
-
-  flexitem:{
+  flexitem: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingVertical: 4,
-    flex: 1
   },
   avatar: {
     width: 50,
@@ -123,5 +141,10 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#000000',
     fontWeight: '400',
+  },
+  addButton: {
+    position: 'absolute',
+    bottom: 20,
+    right: 20,
   },
 });

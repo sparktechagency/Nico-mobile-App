@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   StyleSheet,
   Text,
@@ -14,14 +14,14 @@ import {
   ActivityIndicator,
   SafeAreaView,
 } from 'react-native';
-import {useNavigation} from '@react-navigation/native';
-import {NativeStackNavigationProp} from '@react-navigation/native-stack';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withTiming,
 } from 'react-native-reanimated';
-import {Checkbox} from 'react-native-paper';
+import { Checkbox } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/Ionicons'; // Make sure to install this package
 import { useUselogdinMutation } from '../../../redux/apiSlices/authApiSlice';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -64,11 +64,11 @@ const LoginScreenForUser = () => {
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState('');
-  
+
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const theme = useTheme();
   const translateY = useSharedValue(0);
-  const [uselogdin, {isLoading}] = useUselogdinMutation();
+  const [uselogdin, { isLoading }] = useUselogdinMutation();
 
   const handleBack = () => {
     navigation.goBack(); // Or navigate to specific screen: navigation.navigate('PreviousScreen');
@@ -76,7 +76,7 @@ const LoginScreenForUser = () => {
 
   const handleLogin = async () => {
     setError('');
-    
+
     if (!email) {
       setError('Email is required');
       return;
@@ -88,16 +88,22 @@ const LoginScreenForUser = () => {
     }
 
     try {
-      const result = await uselogdin({email, password});
+      const result = await uselogdin({ email, password });
       console.log('Login Result:', result);
-      if(result.error){
+      if (result.error) {
         console.log('Login Error:', result.error);
         Alert.alert('Login Failed', result.error?.message);
       }
       if (result?.data?.access_token) {
         Alert.alert('Login Success', 'You have successfully logged in.');
         AsyncStorage.setItem('token', JSON.stringify(result?.data?.access_token));
-        navigation.navigate('UserInitialScreen');
+
+        if (result?.data?.user_information?.role === 'user') {
+          navigation.navigate('UserInitialScreen');
+        }
+        else {
+          navigation.navigate('TechnicianBottomTab');
+        }
       }
     } catch (err) {
       Alert.alert('Login Failed', 'Invalid credentials. Please try again.');
@@ -108,14 +114,14 @@ const LoginScreenForUser = () => {
     const showListener = Keyboard.addListener(
       Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow',
       e => {
-        translateY.value = withTiming(-e.endCoordinates.height / 3, {duration: 250});
+        translateY.value = withTiming(-e.endCoordinates.height / 3, { duration: 250 });
       }
     );
-    
+
     const hideListener = Keyboard.addListener(
       Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide',
       () => {
-        translateY.value = withTiming(0, {duration: 250});
+        translateY.value = withTiming(0, { duration: 250 });
       }
     );
 
@@ -126,11 +132,11 @@ const LoginScreenForUser = () => {
   }, []);
 
   const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{translateY: translateY.value}],
+    transform: [{ translateY: translateY.value }],
   }));
 
   return (
-    <SafeAreaView style={{flex: 1, backgroundColor: theme.background}}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: theme.background }}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.container}
@@ -148,20 +154,20 @@ const LoginScreenForUser = () => {
               contentContainerStyle={styles.scrollContainer}
               keyboardShouldPersistTaps="handled">
               <View style={styles.header}>
-                <Text style={[styles.title, {color: theme.text}]}>Login to your account</Text>
-                <Text style={[styles.subtitle, {color: theme.text}]}>
+                <Text style={[styles.title, { color: theme.text }]}>Login to your account</Text>
+                <Text style={[styles.subtitle, { color: theme.text }]}>
                   Please enter your email & password to continue
                 </Text>
               </View>
 
               {error ? (
                 <View style={styles.errorBox}>
-                  <Text style={[styles.errorText, {color: theme.error}]}>{error}</Text>
+                  <Text style={[styles.errorText, { color: theme.error }]}>{error}</Text>
                 </View>
               ) : null}
 
               <View style={styles.form}>
-                <Text style={[styles.label, {color: theme.text}]}>Email</Text>
+                <Text style={[styles.label, { color: theme.text }]}>Email</Text>
                 <TextInput
                   style={[
                     styles.input,
@@ -178,7 +184,7 @@ const LoginScreenForUser = () => {
                   autoCapitalize="none"
                 />
 
-                <Text style={[styles.label, {color: theme.text}]}>Password</Text>
+                <Text style={[styles.label, { color: theme.text }]}>Password</Text>
                 <TextInput
                   style={[
                     styles.input,
@@ -201,27 +207,27 @@ const LoginScreenForUser = () => {
                       onPress={() => setRememberMe(!rememberMe)}
                       color={theme.primary}
                     />
-                    <Text style={[styles.rememberText, {color: theme.text}]}>
+                    <Text style={[styles.rememberText, { color: theme.text }]}>
                       Remember me
                     </Text>
                   </View>
 
                   <TouchableOpacity
                     onPress={() => navigation.navigate('ForgotPasswordAsUser')}>
-                    <Text style={[styles.forgotText, {color: theme.primary}]}>
+                    <Text style={[styles.forgotText, { color: theme.primary }]}>
                       Forgot password?
                     </Text>
                   </TouchableOpacity>
                 </View>
 
                 <TouchableOpacity
-                  style={[styles.button, {backgroundColor: theme.primary}]}
+                  style={[styles.button, { backgroundColor: theme.primary }]}
                   onPress={handleLogin}
                   disabled={isLoading}>
                   {isLoading ? (
                     <ActivityIndicator color={theme.buttonText} />
                   ) : (
-                    <Text style={[styles.buttonText, {color: theme.buttonText}]}>
+                    <Text style={[styles.buttonText, { color: theme.buttonText }]}>
                       Sign In
                     </Text>
                   )}

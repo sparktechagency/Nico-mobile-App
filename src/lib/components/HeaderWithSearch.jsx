@@ -10,50 +10,80 @@ import {
   View,
 } from 'react-native';
 import {SvgXml} from 'react-native-svg';
-import avatar from '../../assets/Icons/avater.png';
 import {IconNotification, search} from '../../assets/Icons/icons';
+import {useGetOwnProfileQuery} from '../../redux/apiSlices/authApiSlice';
+import {useGetAuthuserNotificationQuery} from '../../redux/apiSlices/notification';
+import tw from '../tailwind';
 
-const HeaderWithSearch = () => {
+const HeaderWithSearch = ({setSearchQuery}) => {
   const navigation = useNavigation();
+  const {data, error, isLoading} = useGetOwnProfileQuery();
+  const {
+    data: notification,
+    isLoading: isNotificationLoading,
+    isError: isNotificationError,
+  } = useGetAuthuserNotificationQuery();
+  console.log('notification', notification);
+  const unreadNotifications = notification?.data?.filter(
+    item => item.read_at === null,
+  );
+  console.log('unreadNotifications', unreadNotifications);
+
+  if (error) {
+    console.log('error', error);
+  }
 
   useEffect(() => {
-    // Force the status bar background color to white and icons to black
-    StatusBar.setBarStyle('white-content'); // Black icons
-    StatusBar.setBackgroundColor('red'); // White background
+    StatusBar.setBarStyle('light-content');
+    StatusBar.setBackgroundColor('red');
   }, []);
+
+  if (isLoading || isNotificationLoading) {
+    return <Text>Loading...</Text>;
+  }
 
   return (
     <View style={styles.headerContainer}>
-      {/* Top Section: Avatar, Welcome Text, and Notification Icon */}
       <View style={styles.topSection}>
-        <TouchableOpacity
-          onPress={() => {
-            navigation.navigate('Myaccount');
-          }}>
-          {/* Left Side: Avatar and Text */}
+        <TouchableOpacity onPress={() => navigation.navigate('Myaccount')}>
           <View style={styles.leftContainer}>
-            <Image source={avatar} style={styles.avatar} />
+            <Image
+              source={{
+                uri:
+                  data?.data?.image || 'https://www.gravatar.com/avatar/?d=mp',
+              }}
+              style={styles.avatar}
+            />
             <View>
               <Text style={styles.welcomeText}>Welcome Back,</Text>
-              <Text style={styles.userName}>John Doe</Text>
+              <Text style={styles.userName}>
+                {data?.data?.name || 'Technician'}
+              </Text>
             </View>
           </View>
         </TouchableOpacity>
 
-        {/* Right Side: Notification Icon */}
-        <TouchableOpacity onPress={() => {
-          navigation.navigate('Notification');
-        }} style={styles.notificationButton}>
+        <TouchableOpacity
+          onPress={() => navigation.navigate('Notification')}
+          style={styles.notificationButton}>
           <SvgXml xml={IconNotification} />
+          {unreadNotifications?.length > 0 && (
+            <View
+              style={tw` absolute top-0 right-0 bg-[#F7FF83] rounded-full w-4 h-4 flex items-center justify-center`}>
+              <Text style={tw`text-[#000000] text-xs font-bold`}>
+                {unreadNotifications?.length}
+              </Text>
+            </View>
+          )}
         </TouchableOpacity>
       </View>
 
-      {/* Search Box */}
       <View style={styles.searchContainer}>
         <TextInput
           style={styles.searchInput}
           placeholder="Search tickets"
           placeholderTextColor="gray"
+          onChangeText={text => setSearchQuery(text)}
         />
         <SvgXml xml={search} />
       </View>

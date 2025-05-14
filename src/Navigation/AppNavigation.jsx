@@ -48,11 +48,16 @@ import ChatList from '../screens/UserPartStackScreen/UserSideStackScreens/ChatLi
 import {StatusBar} from 'react-native';
 import NewUserOtpVerify from '../screens/UserPartStackScreen/UserAuthenticationScreens/NewUserOtpVerify';
 import SelectAtechnician from '../screens/UserPartStackScreen/UserSideStackScreens/SelectAtechnician';
+import {useGetOwnProfileQuery} from '../redux/apiSlices/authApiSlice';
+import TicketList from '../screens/TechnicianPartStackScreens/BottomScreens/Tickets/RenderList';
 // import Icon from 'react-native-vector-icons/Ionicons';
 
 const Stack = createNativeStackNavigator();
 
 const AppNavigation = () => {
+  const {data, error, isLoading} = useGetOwnProfileQuery();
+  console.log('user data', data?.data?.role);
+
   return (
     <NavigationContainer
       onStateChange={state => {
@@ -176,6 +181,16 @@ const AppNavigation = () => {
             animation: 'none',
           }}
         />
+
+        <Stack.Screen
+          name="technicianInitialScreen"
+          component={TicketList}
+          options={{
+            headerShown: false,
+            animation: 'none',
+          }}
+        />
+
         <Stack.Screen
           name="qrCamera"
           component={QrcodeCameraScreen}

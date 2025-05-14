@@ -1,12 +1,23 @@
 import {useNavigation} from '@react-navigation/native';
 import React from 'react';
-import {FlatList, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import {
+  FlatList,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import {SvgXml} from 'react-native-svg';
 import {listNavigationIcon} from '../../../../assets/Icons/icons';
 import tw from '../../../../lib/tailwind';
+import UserHeader from '../../../../lib/components/userPartScreen/UserHeader';
+import HeaderWithSearch from '../../../../lib/components/HeaderWithSearch';
+
 const TicketList = () => {
   const navigation = useNavigation();
-
+  const [searchQuery, setSearchQuery] = React.useState('');
+  console.log('searchQuery', searchQuery);
   const runningTickets = [
     {id: '1', title: 'ViewSonic', code: 'JF2656NCDS8', date: '17/12/2024'},
   ];
@@ -57,15 +68,14 @@ const TicketList = () => {
 
   const renderRunningTicket = ({item}) => (
     <TouchableOpacity
-    style={tw`shadow-lg bg-white p-4 rounded-lg flex-row items-center justify-between mb-4 mx-2`}
+      style={tw`shadow-lg bg-white p-4 rounded-lg flex-row items-center justify-between mb-4 mx-2`}
       onPress={() => navigation.navigate('TicketDetails', {ticket: item})}>
       <View style={styles.leftSection}>
         <Text style={[styles.text, styles.title]}>{item.title}</Text>
         <Text style={styles.text}>{item.code}</Text>
       </View>
       <Text style={styles.date}>{item.date}</Text>
-      <TouchableOpacity
-        style={[styles.checkoutButton, styles.checinButton]}>
+      <TouchableOpacity style={[styles.checkoutButton, styles.checinButton]}>
         <Text style={styles.checkoutText}>Check-in</Text>
       </TouchableOpacity>
 
@@ -75,7 +85,7 @@ const TicketList = () => {
 
   const renderPastTicket = ({item}) => (
     <TouchableOpacity
-     style={tw`shadow-lg bg-white p-4 rounded-lg flex-row items-center justify-between mb-4 mx-2`}
+      style={tw`shadow-lg bg-white p-4 rounded-lg flex-row items-center justify-between mb-4 mx-2`}
       onPress={() => navigation.navigate('TicketDetails', {ticket: item})}>
       <View style={styles.leftSection}>
         <Text style={[styles.text, styles.title]}>{item.title}</Text>
@@ -92,6 +102,7 @@ const TicketList = () => {
 
   return (
     <View style={styles.container}>
+      <HeaderWithSearch setSearchQuery={setSearchQuery} />
       <View>
         <Text style={styles.sectionTitle}>Running Tickets</Text>
         <FlatList
@@ -100,8 +111,8 @@ const TicketList = () => {
           keyExtractor={item => item.id}
         />
       </View>
-      <View >
-        <Text  style={styles.sectionTitle}>Past Tickets</Text>
+      <View>
+        <Text style={styles.sectionTitle}>Past Tickets</Text>
         <FlatList
           data={pastTickets}
           renderItem={renderPastTicket}
@@ -177,7 +188,7 @@ const styles = StyleSheet.create({
   checinButton: {
     backgroundColor: '#FF8383',
     marginTop: '5%',
-    marginRight: "15%",
+    marginRight: '15%',
     paddingHorizontal: 20,
     paddingVertical: 4,
     borderRadius: 100,

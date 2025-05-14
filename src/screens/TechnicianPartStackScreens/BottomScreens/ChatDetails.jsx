@@ -98,7 +98,7 @@ const ChatDetails = ({route}) => {
               style={styles.profileImage}
             />
           )}
-          <Text style={styles.userName}>{data.name || 'N/A'}</Text>
+          <Text style={styles.userName}>{data?.name || 'N/A'}</Text>
         </View>
       </View>
 
@@ -109,7 +109,7 @@ const ChatDetails = ({route}) => {
         onContentSizeChange={() =>
           scrollViewRef.current?.scrollToEnd({animated: true})
         }>
-        {messages.map(message => (
+        {messages?.map(message => (
           <View
             key={message.id}
             style={[

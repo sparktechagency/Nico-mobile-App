@@ -1,43 +1,52 @@
-import { Text, View, TouchableOpacity } from 'react-native';
-import React, { useEffect } from 'react';
-import { useTheme } from '../Context/ThemeContext';
-import { useNavigation } from '@react-navigation/native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import {Text, View, TouchableOpacity} from 'react-native';
+import React, {useEffect} from 'react';
+import {useTheme} from '../Context/ThemeContext';
+import {useNavigation} from '@react-navigation/native';
+import {SafeAreaView} from 'react-native-safe-area-context';
 import InitialAppLogo from '../assets/Icons/appLogoForInitialScreen.svg';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import tw from '../lib/tailwind'; // ✅ twrnc import
+import {useGetOwnProfileQuery} from '../redux/apiSlices/authApiSlice';
 
 const InitialScreen = () => {
   const theme = useTheme();
   const navigation = useNavigation();
-
+  const {data, error, isLoading} = useGetOwnProfileQuery();
 
   useEffect(() => {
     const checkToken = async () => {
       try {
         const token = await AsyncStorage.getItem('token');
-        if (token) {
-          navigation.replace('UserInitialScreen');
 
+        if (token) {
+          navigation.replace(
+            `${
+              data?.data?.role === 'user'
+                ? 'UserInitialScreen'
+                : 'TechnicianBottomTab'
+            }`,
+          );
         }
       } catch (error) {
         console.error('Error fetching token:', error);
       }
     };
-  
+
     checkToken();
   }, []);
-  
+
   return (
     <View style={tw`flex-1 bg-white px-4 justify-center items-center`}>
       {/* App Logo */}
-     <View style={tw`absolute top-35`}>
-     <InitialAppLogo width={367} height={267}  />
-     </View>
+      <View style={tw`absolute top-35`}>
+        <InitialAppLogo width={367} height={267} />
+      </View>
 
       {/* Welcome Text */}
-      <Text style={tw`text-center text-[14px] text-black opacity-80 font-semibold  mb-10 leading-[21px]`}>
-        Welcome to Track'd. The world's leading asset management and ticket logging platform.
+      <Text
+        style={tw`text-center text-[14px] text-black opacity-80 font-semibold  mb-10 leading-[21px]`}>
+        Welcome to Track'd. The world's leading asset management and ticket
+        logging platform.
       </Text>
 
       {/* Buttons */}
@@ -46,14 +55,11 @@ const InitialScreen = () => {
         <TouchableOpacity
           style={[
             tw`w-[90%] py-3 border rounded items-center mb-4`,
-            { borderColor: theme.primary }
+            {borderColor: theme.primary},
           ]}
-          onPress={() => navigation.navigate('SignupAsUser')}
-        >
-          <Text style={[
-            tw`text-[16px] font-bold leading-6`,
-            { color: theme.text }
-          ]}>
+          onPress={() => navigation.navigate('SignupAsUser')}>
+          <Text
+            style={[tw`text-[16px] font-bold leading-6`, {color: theme.text}]}>
             SIGN UP AS A USER
           </Text>
         </TouchableOpacity>
@@ -62,14 +68,11 @@ const InitialScreen = () => {
         <TouchableOpacity
           style={[
             tw`w-[90%] py-3 border rounded items-center`,
-            { borderColor: theme.primary }
+            {borderColor: theme.primary},
           ]}
-          onPress={() => navigation.navigate('LoginAsUser')}
-        >
-          <Text style={[
-            tw`text-[16px] font-bold leading-6`,
-            { color: theme.text }
-          ]}>
+          onPress={() => navigation.navigate('LoginAsUser')}>
+          <Text
+            style={[tw`text-[16px] font-bold leading-6`, {color: theme.text}]}>
             LOGIN AS A TECHNICIAN
           </Text>
         </TouchableOpacity>

@@ -21,6 +21,7 @@ import {listNavigationIcon, qrscan} from '../../../assets/Icons/icons';
 import UserHeader from '../../../lib/components/userPartScreen/UserHeader';
 import QRCodeScanner from './QRScanner';
 import {useGetTicketsQuery} from '../../../redux/apiSlices/ticketApi';
+import LoadingSkeleton from '../../../lib/components/LoadingSkeleton';
 
 const {height: SCREEN_HEIGHT} = Dimensions.get('window');
 const SCANNER_BOX_HEIGHT = 256;
@@ -116,11 +117,7 @@ const InitialScreenUser = () => {
   }
 
   if (isLoading) {
-    return (
-      <View style={styles.container}>
-        <Text style={styles.centerText}>Loading tickets...</Text>
-      </View>
-    );
+    return <LoadingSkeleton />;
   }
 
   if (!hasPermission) {

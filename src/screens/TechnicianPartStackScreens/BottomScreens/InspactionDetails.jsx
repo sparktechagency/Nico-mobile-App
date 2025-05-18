@@ -21,6 +21,7 @@ import {
 } from '../../../assets/Icons/icons';
 import TicketDetailsHeader from '../../../lib/components/TicketDetailsHeader';
 import {launchImageLibrary} from 'react-native-image-picker';
+import {useGetInspactionDetailsQuery} from '../../../redux/apiSlices/inspactionSheets';
 
 const SuccessModal = ({visible, onClose}) => (
   <Modal visible={visible} transparent>
@@ -47,13 +48,21 @@ const SuccessModal = ({visible, onClose}) => (
 );
 
 const InspactionDetails = ({navigation, route}) => {
-  const {sheet} = route.params;
-  console.log('sheet dataaaaaaaaaaaaaaaaaaaaaaaaa', sheet);
+  const {id, type} = route?.params;
+
+  const {data: singlecard, isLoading} = useGetInspactionDetailsQuery({
+    type,
+    id,
+  });
+
+  console.log('inspaction details-------------', singlecard);
+  console.log('inspaction details-------------', id);
+  const sheet = singlecard?.data;
 
   const {control, handleSubmit, setValue} = useForm({
     defaultValues: {
-      status: sheet.status,
-      comment: sheet.technician_comment || '',
+      status: sheet?.status || '',
+      comment: sheet?.technician_comment || '',
     },
   });
   const [open, setOpen] = useState(false);
@@ -98,38 +107,38 @@ const InspactionDetails = ({navigation, route}) => {
 
       <View style={tw`bg-[#FFE7E7] p-4 rounded-lg mx-[20px] my-2 mt-6`}>
         <Text style={tw`text-[14px] font-bold text-[#FF6769] mb-1`}>
-          {sheet.ticket.asset.brand} {sheet.ticket.asset.product}
+          {sheet?.ticket?.asset?.brand} {sheet?.ticket?.asset?.product}
         </Text>
         <Text style={tw`text-[#000000] text-[12px] font-medium`}>
-          Serial: {sheet.ticket.asset.serial_number}
+          Serial: {sheet?.ticket?.asset?.serial_number}
         </Text>
       </View>
 
       <View style={tw`bg-[#F0F0F0] p-4 rounded-lg mx-[20px] my-2`}>
         <Text style={tw`font-bold text-[#FF6769]`}>Location:</Text>
-        <Text style={tw`text-[#000000]`}>{sheet.ticket.user.address}</Text>
+        <Text style={tw`text-[#000000]`}>{sheet?.ticket?.user?.address}</Text>
       </View>
 
       <View style={tw`bg-[#F0F0F0] p-4 rounded-lg mx-[20px] my-2`}>
         <Text style={tw`font-bold text-[#FF6769]`}>Problem:</Text>
         <Text style={tw`text-gray-600 text-[14px] font-normal`}>
-          {sheet.support_agent_comment || 'No problem description provided'}
+          {sheet?.support_agent_comment || 'No problem description provided'}
         </Text>
       </View>
 
       <View style={tw`bg-[#F0F0F0] p-4 rounded-lg mx-[20px] my-2`}>
         <Text style={tw`font-bold text-[#FF6769]`}>Assigned by:</Text>
         <Text style={tw`text-[#000000]`}>
-          {sheet.assigned.name} (Support Agent)
+          {sheet?.assigned.name} (Support Agent)
         </Text>
       </View>
 
       <View style={tw`bg-[#F0F0F0] p-4 rounded-lg mx-[20px] my-2`}>
         <Text style={tw`font-bold text-[#FF6769]`}>Technician:</Text>
-        <Text style={tw`text-[#000000]`}>{sheet.technician.name}</Text>
-        {sheet.technician.image && (
+        <Text style={tw`text-[#000000]`}>{sheet?.technician.name}</Text>
+        {sheet?.technician.image && (
           <Image
-            source={{uri: sheet.technician.image}}
+            source={{uri: sheet?.technician?.image}}
             style={tw`w-16 h-16 rounded-full mt-2`}
           />
         )}
@@ -157,7 +166,7 @@ const InspactionDetails = ({navigation, route}) => {
 
               {open && (
                 <View style={tw`mt-2 rounded-lg`}>
-                  {items.map(item => (
+                  {items?.map(item => (
                     <TouchableOpacity
                       key={item.value}
                       onPress={() => {
@@ -198,13 +207,13 @@ const InspactionDetails = ({navigation, route}) => {
       </View>
 
       {/* Display existing images */}
-      {sheet.image && sheet.image.length > 0 && (
+      {sheet?.image && sheet?.image?.length > 0 && (
         <View style={tw`mx-[20px] my-2`}>
           <Text style={tw`font-bold text-[#FF6769] mb-2`}>
             Existing Images:
           </Text>
           <ScrollView horizontal>
-            {sheet.image.map((img, index) => (
+            {sheet?.image.map((img, index) => (
               <Image
                 key={index}
                 source={{uri: img}}
@@ -216,13 +225,13 @@ const InspactionDetails = ({navigation, route}) => {
       )}
 
       {/* Display existing videos */}
-      {sheet.video && sheet.video.length > 0 && (
+      {sheet?.video && sheet?.video?.length > 0 && (
         <View style={tw`mx-[20px] my-2`}>
           <Text style={tw`font-bold text-[#FF6769] mb-2`}>
             Existing Videos:
           </Text>
           <ScrollView horizontal>
-            {sheet.video.map((vid, index) => (
+            {sheet?.video?.map((vid, index) => (
               <View
                 key={index}
                 style={tw`w-32 h-32 mr-2 bg-gray-300 rounded-lg items-center justify-center`}>

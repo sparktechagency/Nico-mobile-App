@@ -8,33 +8,66 @@ import {
   Modal,
   Pressable,
   ActivityIndicator,
+  TextInput,
 } from 'react-native';
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {useNavigation} from '@react-navigation/native';
 import {backIcon, filter, NavigationIcon} from '../../../assets/Icons/icons';
 import {SvgXml} from 'react-native-svg';
 import tw from '../../../lib/tailwind';
-import {
-  useGetAllTechnicianQuery,
-  useGetOrganizationQuery,
-} from '../../../redux/apiSlices/MessageApis';
+import {useGetAllTechnicianQuery} from '../../../redux/apiSlices/MessageApis';
+import {useGetOwnProfileQuery} from '../../../redux/apiSlices/authApiSlice';
 
 const SelectAtechnician = () => {
-  const [filteredOrgId, setFilteredOrgId] = useState(null);
   const [selectedOrg, setSelectedOrg] = useState(null);
   const [showFilter, setShowFilter] = useState(false);
+  const {data: userData} = useGetOwnProfileQuery();
+  const usrRole = userData?.data?.role;
 
-  // Fetch organizations and technicians data
-  const {data: orgResponse, isLoading: orgLoading} = useGetOrganizationQuery();
-  const {data: techResponse, isLoading: techLoading} = useGetAllTechnicianQuery(
-    filteredOrgId ? {id: filteredOrgId} : undefined,
+  const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
+
+  // Debounce search input
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 500);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [searchQuery]);
+
+  // Fetch technicians data
+  const {
+    data: techResponse,
+    isLoading: techLoading,
+    isError,
+    error,
+  } = useGetAllTechnicianQuery(
+    searchQuery || selectedOrg
+      ? {
+          role: selectedOrg?.id || 'technician',
+          ...(selectedOrg?.id && {role: selectedOrg.id}),
+          ...(searchQuery && {search: searchQuery}),
+        }
+      : {role: 'technician'},
+    {
+      refetchOnMountOrArgChange: true,
+    },
   );
 
   const navigation = useNavigation();
 
-  // Extract data from responses
-  const organizations = orgResponse?.data || [];
-  const technicians = techResponse?.data || [];
+  // Transform technicians data for FlatList
+  const technicians =
+    techResponse?.data?.map(tech => ({
+      id: tech.id.toString(),
+      name: tech.name,
+      image: tech.image,
+      created_at: tech.created_at,
+      unread_count: tech.unread_count || 0,
+    })) || [];
 
   const toggleFilter = () => {
     setShowFilter(!showFilter);
@@ -42,23 +75,56 @@ const SelectAtechnician = () => {
 
   const handleOrgSelect = org => {
     setSelectedOrg(org);
-    setFilteredOrgId(org.id);
+    setSearchQuery('');
     setShowFilter(false);
   };
 
   const clearFilter = () => {
     setSelectedOrg(null);
-    setFilteredOrgId(null);
     setShowFilter(false);
   };
 
-  if (orgLoading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#0000ff" />
+  const handleSearch = text => {
+    setSearchQuery(text);
+    if (text) {
+      setSelectedOrg(null);
+    }
+  };
+
+  const clearSearch = () => {
+    setSearchQuery('');
+    setDebouncedSearchQuery('');
+  };
+
+  const renderItem = ({item}) => (
+    <TouchableOpacity
+      onPress={() => navigation.navigate('ChatDetail', {data: item})}>
+      <View style={styles.chatCard}>
+        <Image
+          source={{
+            uri: item.image || 'https://via.placeholder.com/50',
+          }}
+          style={styles.avatar}
+          defaultSource={require('../../../assets/Icons/avater.png')}
+        />
+        <View style={styles.chatInfo}>
+          <View style={styles.flexitem}>
+            <Text style={styles.chatName}>{item.name}</Text>
+            <Text style={styles.chatTime}>
+              {new Date(item.created_at).toLocaleTimeString([], {
+                hour: '2-digit',
+                minute: '2-digit',
+              })}
+            </Text>
+          </View>
+          <View style={styles.flexitem}>
+            <Text style={styles.messageCount}>Click to view chat</Text>
+            <SvgXml xml={NavigationIcon} />
+          </View>
+        </View>
       </View>
-    );
-  }
+    </TouchableOpacity>
+  );
 
   return (
     <View style={styles.container}>
@@ -68,12 +134,11 @@ const SelectAtechnician = () => {
             <SvgXml xml={backIcon} />
           </TouchableOpacity>
           <Text style={tw`text-[20px] font-medium text-[#000000]`}>
-            Technicians
+            {usrRole === 'technician' ? 'Select a user' : 'Select Technician'}
           </Text>
         </View>
 
-        <View>
-          {/* FILTER TECHNICIANS */}
+        <View style={tw`${usrRole === 'user' ? 'hidden' : 'flex'}`}>
           <TouchableOpacity onPress={toggleFilter} style={tw`relative`}>
             <SvgXml xml={filter} />
             {selectedOrg && (
@@ -84,7 +149,6 @@ const SelectAtechnician = () => {
             )}
           </TouchableOpacity>
 
-          {/* Filter Dropdown Modal */}
           <Modal
             visible={showFilter}
             transparent={true}
@@ -94,8 +158,15 @@ const SelectAtechnician = () => {
               style={styles.modalOverlay}
               onPress={() => setShowFilter(false)}>
               <View style={styles.filterDropdown}>
-                <Text style={styles.filterTitle}>Filter by Organization</Text>
-                {organizations.map(org => (
+                <Text style={styles.filterTitle}>Filter by Role</Text>
+                {[
+                  {id: 'organization', name: 'Organization'},
+                  {id: 'location_employee', name: 'Location Employee'},
+                  {id: 'support_agent', name: 'Support Agent'},
+                  {id: 'third_party', name: 'Third Party'},
+
+                  {id: 'user', name: 'User'},
+                ].map(org => (
                   <TouchableOpacity
                     key={org.id}
                     style={[
@@ -122,50 +193,44 @@ const SelectAtechnician = () => {
           </Modal>
         </View>
       </View>
+
+      <View style={styles.searchContainer}>
+        <TextInput
+          placeholder="Search by name or email"
+          style={styles.searchInput}
+          onChangeText={handleSearch}
+          value={searchQuery}
+          placeholderTextColor="#999"
+        />
+        {searchQuery ? (
+          <TouchableOpacity
+            onPress={clearSearch}
+            style={styles.clearSearchButton}>
+            <Text style={styles.clearSearchText}>×</Text>
+          </TouchableOpacity>
+        ) : null}
+      </View>
+
       <View style={styles.contentContainer}>
         {techLoading ? (
           <ActivityIndicator size="large" color="#0000ff" />
+        ) : isError ? (
+          <Text style={styles.noDataText}>
+            Error loading technicians: {error?.message}
+          </Text>
         ) : technicians.length === 0 ? (
           <Text style={styles.noDataText}>
-            {filteredOrgId
-              ? 'No technicians found for this organization'
-              : 'Select an organization to view technicians'}
+            {selectedOrg
+              ? `No ${selectedOrg.name}s found`
+              : searchQuery
+              ? 'No results found'
+              : 'Search or select a role to view technicians'}
           </Text>
         ) : (
           <FlatList
             data={technicians}
-            keyExtractor={item => item.id.toString()}
-            renderItem={({item}) => (
-              <TouchableOpacity
-                onPress={() => navigation.navigate('ChatDetail', {data: item})}>
-                <View style={styles.chatCard}>
-                  <Image
-                    source={{
-                      uri: item.image || '../../../assets/Icons/avater.png',
-                    }}
-                    style={styles.avatar}
-                    defaultSource={require('../../../assets/Icons/avater.png')}
-                  />
-                  <View style={styles.chatInfo}>
-                    <View style={styles.flexitem}>
-                      <Text style={styles.chatName}>{item.name}</Text>
-                      <Text style={styles.chatTime}>
-                        {new Date(item.created_at).toLocaleTimeString([], {
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })}
-                      </Text>
-                    </View>
-                    <View style={styles.flexitem}>
-                      <Text style={styles.messageCount}>
-                        {item.unread_count || 0} new messages
-                      </Text>
-                      <SvgXml xml={NavigationIcon} />
-                    </View>
-                  </View>
-                </View>
-              </TouchableOpacity>
-            )}
+            keyExtractor={item => item.id}
+            renderItem={renderItem}
             removeClippedSubviews={false}
           />
         )}
@@ -174,72 +239,80 @@ const SelectAtechnician = () => {
   );
 };
 
-export default SelectAtechnician;
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: 'white',
   },
   contentContainer: {
-    padding: 20,
     flex: 1,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  noDataText: {
-    textAlign: 'center',
-    marginTop: 20,
-    fontSize: 16,
-    color: '#666',
+    paddingHorizontal: 16,
   },
   chatCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 10,
-    backgroundColor: '#F1F1F1',
-    borderRadius: 5,
+    padding: 12,
+    backgroundColor: '#F8F8F8',
+    borderRadius: 8,
     marginBottom: 10,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    elevation: 3,
+    elevation: 2,
   },
   flexitem: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 4,
+    alignItems: 'center',
+    width: '100%',
   },
   avatar: {
     width: 50,
     height: 50,
     borderRadius: 25,
-    marginRight: 10,
+    marginRight: 12,
+    backgroundColor: '#E0E0E0',
   },
   chatInfo: {
     flex: 1,
   },
   chatName: {
     fontSize: 16,
-    fontWeight: 'bold',
-    color: '#000',
+    fontWeight: '600',
+    color: '#333',
   },
   chatTime: {
     fontSize: 12,
-    color: '#A8A8A8',
+    color: '#888',
   },
   messageCount: {
     fontSize: 12,
-    color: '#000000',
-    fontWeight: '400',
+    color: '#555',
+  },
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginHorizontal: 16,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#DDD',
+    borderRadius: 24,
+    paddingHorizontal: 16,
+  },
+  searchInput: {
+    flex: 1,
+    height: 44,
+    color: '#333',
+  },
+  clearSearchButton: {
+    padding: 4,
+  },
+  clearSearchText: {
+    fontSize: 20,
+    color: '#999',
+  },
+  noDataText: {
+    textAlign: 'center',
+    marginTop: 24,
+    fontSize: 16,
+    color: '#666',
   },
   modalOverlay: {
     flex: 1,
@@ -249,42 +322,44 @@ const styles = StyleSheet.create({
   },
   filterDropdown: {
     backgroundColor: 'white',
-    borderRadius: 8,
+    borderRadius: 12,
     padding: 16,
     width: '80%',
-    maxHeight: '60%',
+    maxHeight: '70%',
   },
   filterTitle: {
     fontSize: 16,
     fontWeight: 'bold',
     marginBottom: 12,
-    color: '#000',
+    color: '#333',
   },
   filterOption: {
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    borderBottomColor: '#EEE',
   },
   selectedOption: {
-    backgroundColor: '#f0f8ff',
+    backgroundColor: '#F0F8FF',
   },
   optionText: {
     fontSize: 14,
-    color: '#333',
+    color: '#444',
   },
   selectedOptionText: {
-    color: '#0066cc',
-    fontWeight: 'bold',
+    color: '#0066CC',
+    fontWeight: '600',
   },
   clearButton: {
     marginTop: 16,
-    padding: 10,
-    backgroundColor: '#f8f8f8',
-    borderRadius: 6,
+    padding: 12,
+    backgroundColor: '#F5F5F5',
+    borderRadius: 8,
     alignItems: 'center',
   },
   clearButtonText: {
-    color: '#ff4444',
+    color: '#FF4444',
     fontWeight: '500',
   },
 });
+
+export default SelectAtechnician;

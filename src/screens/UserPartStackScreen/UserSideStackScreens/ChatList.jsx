@@ -11,9 +11,14 @@ import HeaderOnlySerch from '../../../lib/components/HeaderOnlySerch';
 import {useNavigation} from '@react-navigation/native';
 import {addicon, NavigationIcon} from '../../../assets/Icons/icons';
 import {SvgXml} from 'react-native-svg';
+import {useGetAuthUserChatlistQuery} from '../../../redux/apiSlices/MessageApis';
 
 const ChatList = () => {
   const navigation = useNavigation();
+
+  const {data: chatList} = useGetAuthUserChatlistQuery();
+
+  console.log('Chat list', chatList);
 
   const chatesData = [
     {
@@ -65,9 +70,7 @@ const ChatList = () => {
                     <Text style={styles.chatTime}>{item.time}</Text>
                   </View>
                   <View style={styles.flexitem}>
-                    <Text style={styles.messageCount}>
-                      {item.messageCount} new messages
-                    </Text>
+                    <Text style={styles.messageCount}>click to view chat</Text>
                     <SvgXml xml={NavigationIcon} />
                   </View>
                 </View>

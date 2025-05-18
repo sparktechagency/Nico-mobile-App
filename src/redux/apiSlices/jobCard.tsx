@@ -4,14 +4,22 @@ export const JobCardApis = api.injectEndpoints({
     endpoints: builder => ({
         getjobcard: builder.query({
             query: ({ page = 1, per_page = 10 }) => ({
-                url: `/inspection-list`,
+                url: `/card-list`,
                 method: 'GET',
                 params: { page, per_page }
             }),
 
+
         }),
+
+        getSingleJobCard: builder.query({
+            query: (id) => ({
+                url: `/card-details/${id}`,
+                method: 'GET',
+            }),
+        })
     }),
     overrideExisting: false,
 });
 
-export const { useGetjobcardQuery } = JobCardApis;
+export const { useGetjobcardQuery, useGetSingleJobCardQuery } = JobCardApis;

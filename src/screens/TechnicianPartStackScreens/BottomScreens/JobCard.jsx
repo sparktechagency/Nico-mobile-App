@@ -2,16 +2,14 @@ import {useNavigation} from '@react-navigation/native';
 import React, {useState} from 'react';
 import {
   FlatList,
-  ScrollView,
-  StyleSheet,
   Text,
   TouchableOpacity,
   View,
   ActivityIndicator,
   RefreshControl,
+  StyleSheet,
 } from 'react-native';
 import {SvgXml} from 'react-native-svg';
-
 import tw from '../../../lib/tailwind';
 import {listNavigationIcon} from '../../../assets/Icons/icons';
 import HeaderWithSearch from '../../../lib/components/HeaderWithSearch';
@@ -22,277 +20,305 @@ const JobCard = () => {
   const [page, setPage] = useState(1);
   const [perPage] = useState(10);
   const [refreshing, setRefreshing] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const {
     data: responseData,
     isLoading,
     isError,
-    isFetching,
+    error,
     refetch,
   } = useGetjobcardQuery({page, per_page: perPage});
 
-  // Filter data based on status
-  const newCards = responseData?.data?.data?.filter(
-    item => item.status === 'New' || item.status === 'View the problem',
-  );
-  const pastCards = responseData?.data?.data?.filter(
-    item => item.status !== 'New' && item.status !== 'View the problem',
-  );
-
+  const jobCards = responseData?.data?.data || [];
   const totalPages = Math.ceil(responseData?.data?.total / perPage) || 1;
+
+  // Filter job cards by status
+  const newCards = jobCards.filter(
+    item => item.job_status === 'New' || item.status === 'View the problem',
+  );
+  const pastCards = jobCards.filter(
+    item => !['New', 'View the problem'].includes(item.job_status),
+  );
 
   const onRefresh = async () => {
     setRefreshing(true);
-    await refetch();
-    setRefreshing(false);
-  };
-
-  const handleNextPage = () => {
-    if (page < totalPages) {
-      setPage(page + 1);
+    try {
+      await refetch();
+    } finally {
+      setRefreshing(false);
     }
   };
 
-  const handlePrevPage = () => {
-    if (page > 1) {
-      setPage(page - 1);
+  const handlePageChange = newPage => {
+    if (newPage >= 1 && newPage <= totalPages) {
+      setPage(newPage);
     }
   };
 
-  const renderRunningTicket = ({item}) => (
-    <TouchableOpacity
-      style={tw`shadow-lg bg-white p-4 rounded-lg mb-4 mx-2`}
-      onPress={() => navigation.navigate('jobcarddetails', {ticket: item})}>
-      <View style={tw`flex flex-row items-center justify-between w-full`}>
-        <Text style={styles.title}>
-          {item?.ticket?.asset?.name || 'No Asset Name'}
-        </Text>
-        <Text style={styles.date}>
-          {new Date(item.created_at).toLocaleDateString()}
-        </Text>
-        <View>
-          <SvgXml xml={listNavigationIcon} />
-        </View>
-      </View>
-      <View style={tw`flex flex-row items-center justify-between w-full`}>
-        <Text style={styles.text}>Ticket #{item.ticket_id}</Text>
-        <TouchableOpacity style={styles.checinButton}>
-          <Text style={styles.checkoutText}>Check-in</Text>
-        </TouchableOpacity>
-      </View>
-      <View style={tw`flex flex-row items-center justify-between w-full`}>
-        <Text style={styles.addres}>
-          {item?.ticket?.asset?.address || 'No Address'}
-        </Text>
-        <Text
-          style={tw`text-[16px] font-bold text-[#00950A] absolute right-0 top-2`}>
-          {item?.price ? `$${item.price}` : '$0'}
-        </Text>
-      </View>
-    </TouchableOpacity>
-  );
+  const renderJobCardItem = ({item}) => {
+    console.log('item', item);
+    const isNewCard = newCards.includes(item);
+    const asset = item?.inspection_sheet?.ticket?.asset || {};
+    const ticket = item?.inspection_sheet?.ticket || {};
+    const user = item?.inspection_sheet?.ticket?.user || {};
 
-  const renderPastTicket = ({item}) => (
-    <TouchableOpacity
-      style={tw`shadow-lg bg-white p-4 rounded-lg mb-4 mx-2`}
-      onPress={() => navigation.navigate('jobcarddetails', {ticket: item})}>
-      <View style={tw`flex flex-row items-center justify-between w-full`}>
-        <Text style={styles.title}>
-          {item?.ticket?.asset?.name || 'No Asset Name'}
-        </Text>
-        <Text style={styles.date}>
-          {new Date(item.created_at).toLocaleDateString()}
-        </Text>
-        <View>
-          <SvgXml xml={listNavigationIcon} />
-        </View>
-      </View>
-      <View style={tw`flex flex-row items-center justify-between w-full`}>
-        <Text style={styles.text}>Ticket #{item.ticket_id}</Text>
-        <TouchableOpacity style={styles.checkoutButton}>
-          <Text style={styles.checkoutText}>Completed</Text>
-        </TouchableOpacity>
-      </View>
-      <View style={tw`flex flex-row items-center justify-between w-full`}>
-        <Text style={styles.addres}>
-          {item?.ticket?.asset?.address || 'No Address'}
-        </Text>
-        <Text
-          style={tw`text-[16px] font-bold text-[#00950A] absolute right-0 top-2`}>
-          {item?.price ? `$${item.price}` : '$0'}
-        </Text>
-      </View>
-    </TouchableOpacity>
-  );
-
-  if (isLoading) {
     return (
-      <View style={styles.container}>
-        <ActivityIndicator size="large" color="#0000ff" />
+      <TouchableOpacity
+        style={[styles.card, isNewCard ? styles.newCard : styles.pastCard]}
+        onPress={() => navigation.navigate('jobcarddetails', {jobcard: item})}>
+        <View style={styles.cardHeader}>
+          <Text style={styles.assetBrand}>{asset.brand || 'No Brand'}</Text>
+          <Text style={styles.date}>
+            {new Date(item.created_at).toLocaleDateString()}
+          </Text>
+          <SvgXml xml={listNavigationIcon} />
+        </View>
+
+        <View style={styles.cardBody}>
+          <Text style={styles.serialNumber}>
+            #{ticket.order_number || 'N/A'}
+          </Text>
+
+          <View
+            style={[
+              styles.statusBadge,
+              isNewCard ? styles.newBadge : styles.completedBadge,
+            ]}>
+            <Text style={styles.statusText}>
+              {isNewCard ? 'Check-in' : 'Completed'}
+            </Text>
+          </View>
+        </View>
+
+        <Text style={styles.address}>{user.address || 'No Address'}</Text>
+      </TouchableOpacity>
+    );
+  };
+
+  if (isLoading && page === 1) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#ED1C24" />
       </View>
     );
   }
 
   if (isError) {
     return (
-      <View style={styles.container}>
-        <Text>Error loading data</Text>
+      <View style={styles.errorContainer}>
+        <Text style={styles.errorText}>
+          Error loading job cards: {error?.data?.message || error.message}
+        </Text>
+        <TouchableOpacity style={styles.retryButton} onPress={onRefresh}>
+          <Text style={styles.retryText}>Retry</Text>
+        </TouchableOpacity>
       </View>
     );
   }
 
   return (
-    <ScrollView
-      style={styles.container}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      }>
-      <HeaderWithSearch />
-      <View>
-        <Text style={styles.sectionTitle}>New cards ({newCards?.length})</Text>
-        {newCards?.length > 0 ? (
-          <FlatList
-            data={newCards}
-            renderItem={renderRunningTicket}
-            keyExtractor={item => item.id.toString()}
-          />
-        ) : (
-          <Text style={styles.noDataText}>No new cards available</Text>
+    <View style={styles.container}>
+      <HeaderWithSearch setSearchQuery={setSearchQuery} />
+
+      <FlatList
+        data={[
+          {title: 'New Cards', data: newCards},
+          {title: 'Past Cards', data: pastCards},
+        ]}
+        keyExtractor={item => item.title}
+        renderItem={({item}) => (
+          <View>
+            <Text style={styles.sectionTitle}>
+              {item.title} ({item.data.length})
+            </Text>
+            {item.data.length > 0 ? (
+              <FlatList
+                data={item.data}
+                renderItem={renderJobCardItem}
+                keyExtractor={item => item.id.toString()}
+                scrollEnabled={false}
+              />
+            ) : (
+              <Text style={styles.emptyText}>
+                No {item.title.toLowerCase()}
+              </Text>
+            )}
+          </View>
         )}
-      </View>
-      <View>
-        <Text style={styles.sectionTitle}>
-          Past cards ({pastCards?.length})
-        </Text>
-        {pastCards?.length > 0 ? (
-          <FlatList
-            data={pastCards}
-            renderItem={renderPastTicket}
-            keyExtractor={item => item.id.toString()}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={['#ED1C24']}
           />
-        ) : (
-          <Text style={styles.noDataText}>No past cards available</Text>
-        )}
-      </View>
+        }
+        ListFooterComponent={
+          <View style={styles.paginationContainer}>
+            <TouchableOpacity
+              onPress={() => handlePageChange(page - 1)}
+              disabled={page === 1}
+              style={[
+                styles.paginationButton,
+                page === 1 && styles.disabledButton,
+              ]}>
+              <Text style={styles.paginationText}>Previous</Text>
+            </TouchableOpacity>
 
-      {/* Pagination Controls */}
-      <View style={styles.paginationContainer}>
-        <TouchableOpacity
-          onPress={handlePrevPage}
-          disabled={page === 1}
-          style={[
-            styles.paginationButton,
-            page === 1 && styles.disabledButton,
-          ]}>
-          <Text style={styles.paginationText}>Previous</Text>
-        </TouchableOpacity>
+            <Text style={styles.pageText}>
+              Page {page} of {totalPages}
+            </Text>
 
-        <Text style={styles.pageInfo}>
-          Page {page} of {totalPages}
-        </Text>
-
-        <TouchableOpacity
-          onPress={handleNextPage}
-          disabled={page === totalPages}
-          style={[
-            styles.paginationButton,
-            page === totalPages && styles.disabledButton,
-          ]}>
-          <Text style={styles.paginationText}>Next</Text>
-        </TouchableOpacity>
-      </View>
-
-      <View style={{marginBottom: 60}} />
-    </ScrollView>
+            <TouchableOpacity
+              onPress={() => handlePageChange(page + 1)}
+              disabled={page === totalPages}
+              style={[
+                styles.paginationButton,
+                page === totalPages && styles.disabledButton,
+              ]}>
+              <Text style={styles.paginationText}>Next</Text>
+            </TouchableOpacity>
+          </View>
+        }
+      />
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'white',
+    backgroundColor: '#FFFFFF',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  errorText: {
+    color: '#ED1C24',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  retryButton: {
+    backgroundColor: '#ED1C24',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 5,
+  },
+  retryText: {
+    color: '#FFFFFF',
+    fontWeight: 'bold',
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
     marginVertical: 10,
-    paddingLeft: 10,
+    marginHorizontal: 15,
+    color: '#333333',
   },
-  noDataText: {
+  emptyText: {
     textAlign: 'center',
-    marginVertical: 20,
-    color: '#878787',
+    marginVertical: 15,
+    color: '#888888',
+    fontStyle: 'italic',
   },
-  text: {
-    fontSize: 12,
-    color: '#000000',
-    fontWeight: '500',
+  card: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 8,
+    padding: 15,
+    marginHorizontal: 15,
+    marginBottom: 10,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
-  addres: {
-    fontSize: 14,
-    color: '#878787',
-    fontWeight: '500',
-    paddingTop: 2,
+  newCard: {
+    borderLeftWidth: 2,
+    borderLeftColor: '#ED1C24',
   },
-  title: {
-    fontWeight: 'bold',
-    color: '#FF0205',
+  pastCard: {
+    borderLeftWidth: 2,
+    borderLeftColor: '#00950A',
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  assetBrand: {
     fontSize: 16,
+    fontWeight: 'bold',
+    color: '#ED1C24',
+    flex: 1,
   },
   date: {
-    position: 'absolute',
-    top: 10,
-    right: '45%',
-    fontSize: 10,
-    fontWeight: 'bold',
-    color: '#878787',
+    fontSize: 12,
+    color: '#888888',
+    marginHorizontal: 10,
   },
-  checkoutButton: {
-    backgroundColor: '#00950A',
-    marginTop: 0,
-    marginRight: '15%',
-    paddingHorizontal: 20,
+  cardBody: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 5,
+  },
+  serialNumber: {
+    fontSize: 14,
+    color: '#333333',
+  },
+  statusBadge: {
+    paddingHorizontal: 12,
     paddingVertical: 4,
-    borderRadius: 100,
+    borderRadius: 12,
   },
-  checinButton: {
+  newBadge: {
     backgroundColor: '#FF8383',
-    marginTop: 0,
-    marginRight: '15%',
-    paddingHorizontal: 20,
-    paddingVertical: 4,
-    borderRadius: 100,
   },
-  checkoutText: {
-    color: 'white',
-    fontSize: 10,
+  completedBadge: {
+    backgroundColor: '#00950A',
+  },
+  statusText: {
+    color: '#FFFFFF',
+    fontSize: 12,
     fontWeight: '600',
+  },
+  address: {
+    fontSize: 14,
+    color: '#888888',
   },
   paginationContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 20,
-    marginTop: 10,
+    padding: 15,
     borderTopWidth: 1,
-    borderTopColor: '#eee',
+    borderTopColor: '#EEEEEE',
   },
   paginationButton: {
-    padding: 10,
-    backgroundColor: '#FF0205',
+    backgroundColor: '#ED1C24',
+    paddingVertical: 8,
+    paddingHorizontal: 15,
     borderRadius: 5,
-    minWidth: 100,
-    alignItems: 'center',
   },
   disabledButton: {
-    backgroundColor: '#ccc',
+    backgroundColor: '#CCCCCC',
   },
   paginationText: {
-    color: 'white',
+    color: '#FFFFFF',
     fontWeight: 'bold',
   },
-  pageInfo: {
-    fontSize: 16,
+  pageText: {
     fontWeight: 'bold',
+    color: '#333333',
   },
 });
 

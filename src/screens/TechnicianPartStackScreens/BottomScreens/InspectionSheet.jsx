@@ -21,7 +21,7 @@ const InspectionSheet = () => {
   const [page, setPage] = useState(1);
   const [perPage] = useState(10); // Adjust based on your needs
   const [refreshing, setRefreshing] = useState(false);
-
+  const [searchQuery, setSearchQuery] = useState('');
   const {
     data: responseData,
     isLoading,
@@ -94,7 +94,12 @@ const InspectionSheet = () => {
   const renderSheetItem = ({item}) => (
     <TouchableOpacity
       style={tw`shadow-lg bg-white p-4 rounded-lg flex-row items-center justify-between mb-4 mx-2`}
-      onPress={() => navigation.navigate('inspactionDetails', {sheet: item})}>
+      onPress={() =>
+        navigation.navigate('inspactionDetails', {
+          id: item?.id,
+          type: 'inspection_id',
+        })
+      }>
       <View style={styles.leftSection}>
         <Text style={[styles.text, styles.title]}>
           Ticket #{item.ticket_id}
@@ -147,7 +152,7 @@ const InspectionSheet = () => {
       refreshControl={
         <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
       }>
-      <HeaderWithSearch />
+      <HeaderWithSearch setSearchQuery={setSearchQuery} />
 
       <View>
         <Text style={styles.sectionTitle}>Open sheets</Text>

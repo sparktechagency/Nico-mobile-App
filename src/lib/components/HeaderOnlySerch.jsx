@@ -14,33 +14,32 @@ import avatar from '../../assets/Icons/avater.png';
 import {backIcon, IconNotification, search} from '../../assets/Icons/icons';
 import tw from '../tailwind';
 
-const HeaderOnlySerch = () => {
+const HeaderOnlySerch = ({setSearchQuery}) => {
   const navigation = useNavigation();
 
   useEffect(() => {
-    // Force the status bar background color to white and icons to black
-    StatusBar.setBarStyle('white-content'); // Black icons
-    StatusBar.setBackgroundColor('red'); // White background
+    StatusBar.setBarStyle('white-content');
+    StatusBar.setBackgroundColor('red');
   }, []);
 
   return (
     <View style={styles.headerContainer}>
       {/* Top Section: Avatar, Welcome Text, and Notification Icon */}
       <View style={tw`flex flex-row items-center  gap-4 pb-4`}>
-          <TouchableOpacity
-            onPress={() => {
-              navigation.goBack();
-            }}
-          >
-            <SvgXml xml={backIcon} style={styles.arrowIcon} />
-          </TouchableOpacity>
-          
-          <Text style={styles.title}>Details</Text>
-        </View>
+        <TouchableOpacity
+          onPress={() => {
+            navigation.goBack();
+          }}>
+          <SvgXml xml={backIcon} style={styles.arrowIcon} />
+        </TouchableOpacity>
+
+        <Text style={styles.title}>Details</Text>
+      </View>
 
       {/* Search Box */}
       <View style={styles.searchContainer}>
         <TextInput
+          onChangeText={text => setSearchQuery(text)}
           style={styles.searchInput}
           placeholder="search chats..."
           placeholderTextColor="gray"
@@ -65,9 +64,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     textAlign: 'center',
-  
   },
-
 
   searchContainer: {
     flexDirection: 'row',

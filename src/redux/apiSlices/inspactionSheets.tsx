@@ -30,8 +30,15 @@ export const InspectionSheetApiSlice = api.injectEndpoints({
                 return currentArg !== previousArg;
             },
         }),
+
+        getInspactionDetails: builder.query({
+            query: ({ id, type }) => ({
+                url: `/inspection-details?${type}=${id}`,
+                method: 'GET',
+            }),
+        })
     }),
     overrideExisting: false,
 });
 
-export const { useGetInspectionSheetQuery } = InspectionSheetApiSlice;
+export const { useGetInspectionSheetQuery, useGetInspactionDetailsQuery } = InspectionSheetApiSlice;

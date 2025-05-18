@@ -77,6 +77,8 @@ export const api = createApi({
     'subscription',
     'notificasion',
     'ticket',
+    'message',
+    'Technicians',
   ],
 });
 

@@ -1,207 +1,337 @@
+import React, {useState, useEffect, useRef} from 'react';
 import {useNavigation} from '@react-navigation/native';
-import React from 'react';
 import {
+  Button,
   FlatList,
-  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
+  PermissionsAndroid,
+  Platform,
+  StatusBar,
+  ScrollView,
+  Modal,
+  Animated,
+  Dimensions,
 } from 'react-native';
 import {SvgXml} from 'react-native-svg';
+import tw from 'twrnc';
+import {useGetTicketsQuery} from '../../../../redux/apiSlices/ticketApi';
+import LoadingSkeleton from '../../../../lib/components/LoadingSkeleton';
+
 import {listNavigationIcon} from '../../../../assets/Icons/icons';
-import tw from '../../../../lib/tailwind';
 import UserHeader from '../../../../lib/components/userPartScreen/UserHeader';
 import HeaderWithSearch from '../../../../lib/components/HeaderWithSearch';
 
+const {height: SCREEN_HEIGHT} = Dimensions.get('window');
+const SCANNER_BOX_HEIGHT = 256;
+
 const TicketList = () => {
   const navigation = useNavigation();
-  const [searchQuery, setSearchQuery] = React.useState('');
-  console.log('searchQuery', searchQuery);
-  const runningTickets = [
-    {id: '1', title: 'ViewSonic', code: 'JF2656NCDS8', date: '17/12/2024'},
-  ];
-  const pastTickets = [
-    {
-      id: '1', // Changed ID to make it unique
-      title: 'ViewSonic',
-      code: 'JF2656NCDS8',
-      address: 'Road no. 14, Block-D, Banasree, Dhaka.',
-      date: '10/12/2024',
-    },
-    {
-      id: '2', // Changed ID to make it unique
-      title: 'ViewSonic',
-      code: 'JF2656NCDS8',
-      address: 'Road no. 14, Block-D, Banasree, Dhaka.',
-      date: '10/12/2024',
-    },
-    {
-      id: '3', // Changed ID to make it unique
-      title: 'ViewSonic',
-      code: 'JF2656NCDS8',
-      address: 'Road no. 14, Block-D, Banasree, Dhaka.',
-      date: '10/12/2024',
-    },
-    {
-      id: '4', // Changed ID to make it unique
-      title: 'ViewSonic',
-      code: 'JF2656NCDS8',
-      address: 'Road no. 14, Block-D, Banasree, Dhaka.',
-      date: '10/12/2024',
-    },
-    {
-      id: '5', // Changed ID to make it unique
-      title: 'ViewSonic',
-      code: 'JF2656NCDS8',
-      address: 'Road no. 14, Block-D, Banasree, Dhaka.',
-      date: '10/12/2024',
-    },
-    {
-      id: '6', // Changed ID to make it unique
-      title: 'ViewSonic',
-      code: 'JF2656NCDS8',
-      address: 'Road no. 14, Block-D, Banasree, Dhaka.',
-      date: '10/12/2024',
-    },
-  ];
+  const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
+  console.log('searchQuery', debouncedSearchQuery);
+  // Debounce search input (500ms delay)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 500);
 
-  const renderRunningTicket = ({item}) => (
-    <TouchableOpacity
-      style={tw`shadow-lg bg-white p-4 rounded-lg flex-row items-center justify-between mb-4 mx-2`}
-      onPress={() => navigation.navigate('TicketDetails', {ticket: item})}>
-      <View style={styles.leftSection}>
-        <Text style={[styles.text, styles.title]}>{item.title}</Text>
-        <Text style={styles.text}>{item.code}</Text>
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  const {data, error, isError, isLoading, refetch} = useGetTicketsQuery(
+    debouncedSearchQuery ? {search: debouncedSearchQuery} : {},
+  );
+  console.log('data', data);
+  // Safely process API data to separate open and closed tickets
+  const tickets = data?.data?.data || [];
+  const openTickets = tickets.filter(ticket =>
+    ['New', 'Assigned'].includes(ticket.ticket_status),
+  );
+  const closedTickets = tickets.filter(ticket =>
+    ['Completed', 'Closed'].includes(ticket.ticket_status),
+  );
+
+  if (isError) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.centerText}>
+          Error loading tickets: {error?.message || 'Unknown error'}
+        </Text>
       </View>
-      <Text style={styles.date}>{item.date}</Text>
-      <TouchableOpacity style={[styles.checkoutButton, styles.checinButton]}>
-        <Text style={styles.checkoutText}>Check-in</Text>
-      </TouchableOpacity>
+    );
+  }
 
-      <SvgXml xml={listNavigationIcon} style={styles.arrowIcon} />
+  if (isLoading) {
+    return <LoadingSkeleton />;
+  }
+
+  const renderOpenTicket = ({item}) => (
+    <TouchableOpacity
+      style={[styles.card, tw`bg-white p-4 rounded-lg mb-4 mx-2`]}
+      onPress={() => navigation.navigate('TicketDetails', {ticketData: item})}>
+      <View style={styles.ticketContent}>
+        <View style={styles.leftSection}>
+          <Text style={[styles.text, styles.title]}>
+            {item.asset?.product || 'Unknown Product'}
+          </Text>
+          <Text style={styles.text}>
+            Serial: {item.asset?.serial_number || 'N/A'}
+          </Text>
+          <Text style={styles.text}>Status: {item.ticket_status}</Text>
+        </View>
+        <View style={styles.rightSection}>
+          <Text style={styles.date}>
+            {new Date(item.created_at).toLocaleDateString()}
+          </Text>
+          <View style={styles.statusContainer}>
+            <View
+              style={[
+                styles.statusBadge,
+                item.ticket_status === 'Assigned'
+                  ? styles.inProgressBadge
+                  : styles.newBadge,
+              ]}>
+              <Text style={styles.statusText}>
+                {item.ticket_status === 'Assigned' ? 'In Progress' : 'New'}
+              </Text>
+            </View>
+            <SvgXml xml={listNavigationIcon} width={20} height={20} />
+          </View>
+        </View>
+      </View>
     </TouchableOpacity>
   );
 
-  const renderPastTicket = ({item}) => (
+  const renderClosedTicket = ({item}) => (
     <TouchableOpacity
-      style={tw`shadow-lg bg-white p-4 rounded-lg flex-row items-center justify-between mb-4 mx-2`}
-      onPress={() => navigation.navigate('TicketDetails', {ticket: item})}>
-      <View style={styles.leftSection}>
-        <Text style={[styles.text, styles.title]}>{item.title}</Text>
-        <Text style={styles.text}>{item.code}</Text>
-        <Text style={styles.addres}>{item.address}</Text>
+      style={[styles.card, tw`bg-white p-4 rounded-lg mb-4 mx-2`]}
+      onPress={() => navigation.navigate('TicketDetails', {ticketData: item})}>
+      <View style={styles.ticketContent}>
+        <View style={styles.leftSection}>
+          <Text style={[styles.text, styles.title]}>
+            {item.asset?.product || 'Unknown Product'}
+          </Text>
+          <Text style={styles.text}>
+            Serial: {item.asset?.serial_number || 'N/A'}
+          </Text>
+          <Text style={styles.text}>{item?.user?.address}</Text>
+        </View>
+        <View style={styles.rightSection}>
+          <Text style={styles.date}>
+            {new Date(item.created_at).toLocaleDateString()}
+          </Text>
+          <View style={styles.statusContainer}>
+            <View style={[styles.statusBadge, styles.completedBadge]}>
+              <Text style={styles.statusText}>Completed</Text>
+            </View>
+            <SvgXml xml={listNavigationIcon} width={20} height={20} />
+          </View>
+        </View>
       </View>
-      <Text style={styles.date}>{item.date}</Text>
-      <TouchableOpacity style={styles.checkoutButton}>
-        <Text style={styles.checkoutText}>Check-out</Text>
-      </TouchableOpacity>
-      <SvgXml xml={listNavigationIcon} style={styles.arrowIcon} />
     </TouchableOpacity>
   );
 
   return (
-    <View style={styles.container}>
+    <ScrollView style={tw`bg-white `}>
+      <StatusBar barStyle="light-content" />
       <HeaderWithSearch setSearchQuery={setSearchQuery} />
-      <View>
-        <Text style={styles.sectionTitle}>Running Tickets</Text>
-        <FlatList
-          data={runningTickets}
-          renderItem={renderRunningTicket}
-          keyExtractor={item => item.id}
-        />
+
+      {/* Open Tickets Section */}
+      <View style={tw`px-2`}>
+        <Text style={styles.sectionTitle}>
+          Running Tickets ({openTickets.length})
+        </Text>
+        {openTickets.length > 0 ? (
+          <FlatList
+            data={openTickets}
+            renderItem={renderOpenTicket}
+            keyExtractor={item => item.id.toString()}
+            scrollEnabled={false}
+            removeClippedSubviews={false}
+            contentContainerStyle={{paddingBottom: 20}}
+            showsVerticalScrollIndicator={false}
+            showsHorizontalScrollIndicator={false}
+          />
+        ) : (
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyStateText}>No Running tickets found</Text>
+          </View>
+        )}
       </View>
-      <View>
-        <Text style={styles.sectionTitle}>Past Tickets</Text>
-        <FlatList
-          data={pastTickets}
-          renderItem={renderPastTicket}
-          keyExtractor={item => item.id}
-          ListFooterComponent={<View style={{marginBottom: '60%'}} />} // Extra bottom space
-        />
+
+      {/* Closed Tickets Section */}
+      <View style={tw`px-2 mt-4`}>
+        <View style={tw`flex-row justify-between items-center mb-2`}>
+          <Text style={styles.sectionTitle}>
+            Past Tickets ({closedTickets.length})
+          </Text>
+          {closedTickets.length > 3 && (
+            <TouchableOpacity
+              onPress={() => navigation.navigate('ClosedTickets')}
+              style={tw`border border-red-400 rounded-md px-3 py-1`}>
+              <Text style={tw`text-gray-700`}>See all</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+
+        {closedTickets.length > 0 ? (
+          <FlatList
+            data={closedTickets.slice(0, 3)}
+            renderItem={renderClosedTicket}
+            keyExtractor={item => item.id.toString()}
+            scrollEnabled={false}
+            ListFooterComponent={<View style={tw`h-20`} />}
+          />
+        ) : (
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyStateText}>No closed tickets found</Text>
+          </View>
+        )}
       </View>
-    </View>
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
+  card: {
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  ticketContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  leftSection: {
+    flex: 2,
+  },
+  rightSection: {
     flex: 1,
-
-    backgroundColor: 'white',
+    alignItems: 'flex-end',
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
-    marginVertical: 10,
-    paddingLeft: 10,
+    fontWeight: '600',
+    color: '#2d3748',
+    marginVertical: 8,
   },
-  // card: {
-  //   flexDirection: 'row',
-  //   alignItems: 'center',
-  //   backgroundColor: '#FFFFFF',
-  //   padding: 10,
-  //   borderRadius: 8,
-  //   marginVertical: 5,
-  //   position: 'relative',
-  //   shadowColor: '#00000040',
-  //   shadowOpacity: 0.5,
-  //   shadowRadius: 5,
-  //   elevation: 3,
-  // },
-  leftSection: {
-    flex: 1,
+  centerText: {
+    fontSize: 16,
+    color: '#4a5568',
+    textAlign: 'center',
+    marginTop: 20,
+  },
+  emptyState: {
+    padding: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#edf2f7',
+    borderRadius: 8,
+    marginVertical: 8,
+  },
+  emptyStateText: {
+    fontSize: 14,
+    color: '#718096',
+  },
+  scannedText: {
+    marginTop: 8,
+    fontSize: 14,
+    color: '#2d3748',
+    textAlign: 'center',
+    backgroundColor: '#ebf8ff',
+    padding: 8,
+    borderRadius: 4,
   },
   text: {
-    fontSize: 12,
-    color: '#000000',
-    fontWeight: '500',
-    paddingTop: 5,
+    fontSize: 13,
+    color: '#4a5568',
+    marginBottom: 4,
   },
-  addres: {
-    fontSize: 14,
-    color: '#878787',
-    fontWeight: '500',
-    paddingTop: 5,
-  },
-
   title: {
-    fontWeight: 'bold',
-    color: '#FF0205',
-    fontSize: 16,
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#e53e3e',
+    marginBottom: 6,
   },
   date: {
-    position: 'absolute',
-    top: 10,
-    right: '45%',
-    fontSize: 10,
-    fontWeight: 'bold',
-    color: '#878787',
+    fontSize: 12,
+    color: '#718096',
+    marginBottom: 8,
   },
-  checkoutButton: {
-    backgroundColor: '#00950A',
-    marginTop: '8%',
-    paddingHorizontal: 20,
+  statusContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  statusBadge: {
+    borderRadius: 12,
+    paddingHorizontal: 10,
     paddingVertical: 4,
-    borderRadius: 100,
+    marginRight: 8,
   },
-  checinButton: {
+  newBadge: {
     backgroundColor: '#FF8383',
-    marginTop: '5%',
-    marginRight: '15%',
-    paddingHorizontal: 20,
-    paddingVertical: 4,
-    borderRadius: 100,
   },
-  checkoutText: {
-    color: 'white',
-    fontSize: 10,
-    fontWeight: '600',
+  inProgressBadge: {
+    backgroundColor: '#00950A',
   },
-  arrowIcon: {
+  completedBadge: {
+    backgroundColor: '#00950A',
+  },
+  statusText: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: '#FFFFFF',
+  },
+  scanLine: {
     position: 'absolute',
-    top: 10,
-    right: 10,
+    height: 2,
+    width: '100%',
+    backgroundColor: '#ED1C24',
+    shadowColor: '#ED1C24',
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 1,
+    shadowRadius: 10,
+    elevation: 5,
+  },
+  corner: {
+    position: 'absolute',
+    width: 30,
+    height: 30,
+    borderColor: '#ED1C24',
+    borderWidth: 0,
+  },
+  topLeft: {
+    top: 0,
+    left: 0,
+    borderTopWidth: 4,
+    borderLeftWidth: 4,
+    borderTopLeftRadius: 8,
+  },
+  topRight: {
+    top: 0,
+    right: 0,
+    borderTopWidth: 4,
+    borderRightWidth: 4,
+    borderTopRightRadius: 8,
+  },
+  bottomLeft: {
+    bottom: 0,
+    left: 0,
+    borderBottomWidth: 4,
+    borderLeftWidth: 4,
+    borderBottomLeftRadius: 8,
+  },
+  bottomRight: {
+    bottom: 0,
+    right: 0,
+    borderBottomWidth: 4,
+    borderRightWidth: 4,
+    borderBottomRightRadius: 8,
   },
 });
 

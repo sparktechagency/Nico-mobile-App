@@ -69,4 +69,10 @@ const UserHeader = () => {
   );
 };
 
+const styles = {
+  notificationButton: {
+    position: 'relative',
+  },
+};
+
 export default UserHeader;

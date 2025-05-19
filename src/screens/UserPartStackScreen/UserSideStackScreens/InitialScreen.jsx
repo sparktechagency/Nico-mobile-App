@@ -14,6 +14,7 @@ import {
   Modal,
   Animated,
   Dimensions,
+  RefreshControl,
 } from 'react-native';
 import {SvgXml} from 'react-native-svg';
 import tw from 'twrnc';
@@ -28,10 +29,11 @@ const SCANNER_BOX_HEIGHT = 256;
 
 const InitialScreenUser = () => {
   const navigation = useNavigation();
+  const [refreshing, setRefreshing] = useState(false);
   const [scannedData, setScannedData] = useState('');
   const [hasPermission, setHasPermission] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
-  const {data, error, isError, isLoading} = useGetTicketsQuery();
+  const {data, error, isError, isLoading, refetch} = useGetTicketsQuery();
   const scanLinePos = useRef(new Animated.Value(0)).current;
 
   // Safely process API data to separate open and closed tickets
@@ -104,6 +106,17 @@ const InitialScreenUser = () => {
     setScannedData(e);
     setIsScanning(false);
     navigation.navigate('Your Problem', {scannedData: e});
+  };
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    try {
+      await refetch();
+    } catch (error) {
+      console.log('Refresh error:', error);
+    } finally {
+      setRefreshing(false);
+    }
   };
 
   if (isError) {
@@ -196,7 +209,11 @@ const InitialScreenUser = () => {
   );
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+      }
+      style={styles.container}>
       <StatusBar barStyle="light-content" />
       <UserHeader />
 

@@ -35,25 +35,25 @@
 //   const handleSignUp = async () => {
 //     // Reset validation error
 //     setValidationError('');
-    
+
 //     // Validate form fields
 //     if (!name || !email || !address || !password) {
 //       setValidationError('Please fill in all fields.');
 //       return;
 //     }
-  
+
 //     try {
 //       const result = await usesignUp({ name, email, address, password }).unwrap();
 //       console.log('Sign Up Success:', result);
-      
+
 //       // Navigate after successful signup
 //       navigation.navigate('UserInitialScreen');
-      
+
 //     } catch (error: any) {
 //       console.error('Sign Up Error:', error);
 //       // Proper error handling for RTK Query
 //       let errorMessage = 'Signup failed. Please try again.';
-      
+
 //       if (error.data?.message) {
 //         errorMessage = error.data.message;
 //       } else if (error.error) {
@@ -61,7 +61,7 @@
 //       } else if (error.status === 409) {
 //         errorMessage = 'Email already exists';
 //       }
-      
+
 //       Alert.alert('Sign Up Failed', errorMessage);
 //     }
 //   };
@@ -100,7 +100,7 @@
 //         <ScrollView
 //           contentContainerStyle={styles.scrollContainer}
 //           keyboardShouldPersistTaps="handled">
-          
+
 //           {/* First Part */}
 //           <View style={styles.headerContainer}>
 //             <Text style={[styles.title, { color: theme.text }]}>Sign Up to your account</Text>
@@ -108,7 +108,7 @@
 //               Please enter your details to continue
 //             </Text>
 //           </View>
-          
+
 //           {/* Second Part - Input Fields */}
 //           <View style={styles.formContainer}>
 //             {validationError ? (
@@ -183,7 +183,7 @@
 //               onChangeText={setPassword}
 //               placeholderTextColor={theme.placeholder}
 //             />
-            
+
 //             <TouchableOpacity
 //               onPress={handleSignUp}
 //               style={[styles.signUpButton, { backgroundColor: theme.primary }]}
@@ -322,46 +322,46 @@ const SignUpScreen = () => {
 
   const handleSignUp = async () => {
     setValidationError('');
-    
+
     // Basic validation
     if (!name.trim() || !email.trim() || !address.trim() || !password.trim()) {
       setValidationError('All fields are required');
       return;
     }
 
- 
+
 
     const formdata = new FormData();
     formdata.append('name', name);
     formdata.append('email', email);
     formdata.append('address', address);
     formdata.append('password', password);
-    
+
     // Convert formdata._parts into object
     const formDataObject = Object.fromEntries(formdata._parts);
     console.log('Form Data Object:', formDataObject);
-    
-   try {
-    const res = await usesignUp(formDataObject).unwrap();
-    console.log('Sign Up Success:', res);
-    if(res.status === true){
-      navigation.navigate('NewUserOtpVerify');
-      Alert.alert(
-        'Success', 
-        'Verification link sent to your email',
-        [{ text: 'OK', onPress: () => navigation.navigate('NewUserOtpVerify',{email}) }],
-      );
-    }
 
-    if(res.error){
-      Alert.alert('Error', res.message || 'Failed to sign up');
-    }
+    try {
+      const res = await usesignUp(formDataObject).unwrap();
+      console.log('Sign Up Success:', res);
+      if (res.status === true) {
+        navigation.navigate('NewUserOtpVerify');
+        Alert.alert(
+          'Success',
+          'Verification link sent to your email',
+          [{ text: 'OK', onPress: () => navigation.navigate('NewUserOtpVerify', { email }) }],
+        );
+      }
 
-   } catch (error) {
-    console.error('Error signing up:', error);
-    Alert.alert('Error', error?.message || 'Failed to sign up');
-    
-   }
+      if (res.error) {
+        Alert.alert('Error', res?.message || 'Failed to sign up');
+      }
+
+    } catch (error) {
+
+      Alert.alert('Error', error?.message?.[0] || 'Failed to sign up');
+
+    }
   };
 
   // Keyboard handling
@@ -398,14 +398,14 @@ const SignUpScreen = () => {
         <ScrollView
           contentContainerStyle={styles.scrollContainer}
           keyboardShouldPersistTaps="handled">
-          
+
           <View style={styles.headerContainer}>
             <Text style={[styles.title, { color: theme.text }]}>Sign Up to your account</Text>
             <Text style={[styles.subtitle, { color: theme.text }]}>
               Please enter your details to continue
             </Text>
           </View>
-          
+
           <View style={styles.formContainer}>
             {validationError ? (
               <Text style={[styles.errorText, { color: theme.error }]}>
@@ -416,9 +416,9 @@ const SignUpScreen = () => {
             <Text style={[styles.label, { color: theme.text }]}>Name</Text>
             <TextInput
               style={[
-                styles.input, 
-                { 
-                  backgroundColor: theme.whitesmoke, 
+                styles.input,
+                {
+                  backgroundColor: theme.whitesmoke,
                   color: theme.text,
                   borderColor: validationError ? theme.error : '#ccc'
                 }
@@ -432,9 +432,9 @@ const SignUpScreen = () => {
             <Text style={[styles.label, { color: theme.text }]}>Email</Text>
             <TextInput
               style={[
-                styles.input, 
-                { 
-                  backgroundColor: theme.whitesmoke, 
+                styles.input,
+                {
+                  backgroundColor: theme.whitesmoke,
                   color: theme.text,
                   borderColor: validationError ? theme.error : '#ccc'
                 }
@@ -450,9 +450,9 @@ const SignUpScreen = () => {
             <Text style={[styles.label, { color: theme.text }]}>Address</Text>
             <TextInput
               style={[
-                styles.input, 
-                { 
-                  backgroundColor: theme.whitesmoke, 
+                styles.input,
+                {
+                  backgroundColor: theme.whitesmoke,
                   color: theme.text,
                   borderColor: validationError ? theme.error : '#ccc'
                 }
@@ -466,9 +466,9 @@ const SignUpScreen = () => {
             <Text style={[styles.label, { color: theme.text }]}>Password</Text>
             <TextInput
               style={[
-                styles.input, 
-                { 
-                  backgroundColor: theme.whitesmoke, 
+                styles.input,
+                {
+                  backgroundColor: theme.whitesmoke,
                   color: theme.text,
                   borderColor: validationError ? theme.error : '#ccc'
                 }
@@ -479,18 +479,18 @@ const SignUpScreen = () => {
               onChangeText={setPassword}
               placeholderTextColor={theme.placeholder}
             />
-            
+
             <TouchableOpacity
-            disabled={isLoading}
+              disabled={isLoading}
               onPress={handleSignUp}
-              style={[styles.signUpButton, { 
-                backgroundColor:  theme.primary 
+              style={[styles.signUpButton, {
+                backgroundColor: theme.primary
               }]}
-         
+
             >
-               <Text style={[styles.buttonText, { color: theme.background }]}>
+              <Text style={[styles.buttonText, { color: theme.background }]}>
                 {isLoading ? 'Signing Up...' : 'Sign Up'}
-               </Text>
+              </Text>
             </TouchableOpacity>
           </View>
 

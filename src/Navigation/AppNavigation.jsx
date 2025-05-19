@@ -50,6 +50,7 @@ import NewUserOtpVerify from '../screens/UserPartStackScreen/UserAuthenticationS
 import SelectAtechnician from '../screens/UserPartStackScreen/UserSideStackScreens/SelectAtechnician';
 import {useGetOwnProfileQuery} from '../redux/apiSlices/authApiSlice';
 import TicketList from '../screens/TechnicianPartStackScreens/BottomScreens/Tickets/RenderList';
+import Chats from '../screens/TechnicianPartStackScreens/BottomScreens/Chats';
 // import Icon from 'react-native-vector-icons/Ionicons';
 
 const Stack = createNativeStackNavigator();
@@ -438,7 +439,7 @@ const AppNavigation = () => {
         />
         <Stack.Screen
           name="Chats"
-          component={ChatList}
+          component={Chats}
           options={{
             headerShown: false,
           }}

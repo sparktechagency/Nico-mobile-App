@@ -10,12 +10,8 @@ export const TicketApiSlice = api.injectEndpoints({
         //     providesTags: ['ticket'],
         // }),
         getTickets: builder.query({
-            query: ({ search }) => {
-                const searchParams = new URLSearchParams();
-                if (search) {
-                    searchParams.append('search', search);
-                }
-                const url = `/ticket-list?${searchParams.toString()}`;
+            query: ({ search } = {}) => {
+                const url = search ? `/ticket-list?search=${encodeURIComponent(search)}` : '/ticket-list';
                 return {
                     url,
                     method: 'GET',
@@ -26,6 +22,7 @@ export const TicketApiSlice = api.injectEndpoints({
             },
             providesTags: ['ticket'],
         }),
+
         createATicket: builder.mutation({
             query: (data) => ({
                 url: `/create-ticket`,

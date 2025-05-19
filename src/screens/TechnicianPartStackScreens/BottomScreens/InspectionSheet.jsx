@@ -1,5 +1,5 @@
 import {useNavigation} from '@react-navigation/native';
-import React, {useState, useCallback} from 'react';
+import React, {useState, useCallback, useEffect} from 'react';
 import {
   FlatList,
   ScrollView,
@@ -22,13 +22,28 @@ const InspectionSheet = () => {
   const [perPage] = useState(10); // Adjust based on your needs
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
+  console.log('searchQuery', debouncedSearchQuery);
+  // Debounce search input (500ms delay)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
   const {
     data: responseData,
     isLoading,
     isError,
     isFetching,
     refetch,
-  } = useGetInspectionSheetQuery({page, per_page: perPage});
+  } = useGetInspectionSheetQuery({
+    page,
+    per_page: perPage,
+    search: debouncedSearchQuery,
+  });
 
   const navigation = useNavigation();
 
@@ -152,7 +167,10 @@ const InspectionSheet = () => {
       refreshControl={
         <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
       }>
-      <HeaderWithSearch setSearchQuery={setSearchQuery} />
+      <HeaderWithSearch
+        title=" Search Inspection Sheets"
+        setSearchQuery={setSearchQuery}
+      />
 
       <View>
         <Text style={styles.sectionTitle}>Open sheets</Text>

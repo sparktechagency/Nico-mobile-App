@@ -15,7 +15,7 @@ import {useGetOwnProfileQuery} from '../../redux/apiSlices/authApiSlice';
 import {useGetAuthuserNotificationQuery} from '../../redux/apiSlices/notification';
 import tw from '../tailwind';
 
-const HeaderWithSearch = ({setSearchQuery}) => {
+const HeaderWithSearch = ({setSearchQuery, title}) => {
   const navigation = useNavigation();
   const {data, error, isLoading} = useGetOwnProfileQuery();
   const {
@@ -81,7 +81,7 @@ const HeaderWithSearch = ({setSearchQuery}) => {
       <View style={styles.searchContainer}>
         <TextInput
           style={styles.searchInput}
-          placeholder="Search tickets"
+          placeholder={title}
           placeholderTextColor="gray"
           onChangeText={text => setSearchQuery(text)}
         />

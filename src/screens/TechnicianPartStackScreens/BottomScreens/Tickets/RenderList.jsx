@@ -137,7 +137,10 @@ const TicketList = () => {
   return (
     <ScrollView style={tw`bg-white `}>
       <StatusBar barStyle="light-content" />
-      <HeaderWithSearch setSearchQuery={setSearchQuery} />
+      <HeaderWithSearch
+        title="Search Tickets"
+        setSearchQuery={setSearchQuery}
+      />
 
       {/* Open Tickets Section */}
       <View style={tw`px-2`}>

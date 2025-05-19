@@ -7,6 +7,7 @@ import {
   TextInput,
   Modal,
   Image,
+  Alert,
 } from 'react-native';
 import {useForm, Controller} from 'react-hook-form';
 import {SvgXml} from 'react-native-svg';
@@ -21,7 +22,10 @@ import {
 } from '../../../assets/Icons/icons';
 import TicketDetailsHeader from '../../../lib/components/TicketDetailsHeader';
 import {launchImageLibrary} from 'react-native-image-picker';
-import {useGetInspactionDetailsQuery} from '../../../redux/apiSlices/inspactionSheets';
+import {
+  useGetInspactionDetailsQuery,
+  useUpdateInspactionMutation,
+} from '../../../redux/apiSlices/inspactionSheets';
 
 const SuccessModal = ({visible, onClose}) => (
   <Modal visible={visible} transparent>
@@ -35,7 +39,7 @@ const SuccessModal = ({visible, onClose}) => (
         </Text>
         <Text
           style={tw`text-[14px] font-normal text-gray-500 text-center px-4 mb-4`}>
-          Please be patient until the user accept the quotation
+          Inspection Sheet Update Successfully
         </Text>
         <TouchableOpacity
           style={tw`bg-[#ED1C24] p-3 rounded-lg max-w-[100px] w-full mx-auto`}
@@ -54,51 +58,125 @@ const InspactionDetails = ({navigation, route}) => {
     type,
     id,
   });
+  const [updateInspaction, {isLoading: isUpdating}] =
+    useUpdateInspactionMutation();
 
-  console.log('inspaction details-------------', singlecard);
-  console.log('inspaction details-------------', id);
   const sheet = singlecard?.data;
 
   const {control, handleSubmit, setValue} = useForm({
     defaultValues: {
-      status: sheet?.status || '',
-      comment: sheet?.technician_comment || '',
+      ticket_status: sheet?.status || '',
+      technician_comment: sheet?.technician_comment || '',
     },
   });
   const [open, setOpen] = useState(false);
-  const [image, setImage] = useState(null);
-  const [video, setVideo] = useState(null);
+  const [images, setImages] = useState([]);
+  const [videos, setVideos] = useState([]);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const items = [
-    {label: 'New', value: 'New'},
-    {label: 'Contract with user', value: 'Contract with user'},
-    {label: 'View the problem', value: 'View the problem'},
-    {label: 'Arrived in Location', value: 'Arrived in Location'},
-    {label: 'Solve the problem', value: 'Solve the problem'},
+    {label: 'New', value: 'new'},
+    {label: 'Assigned', value: 'assigned'},
+    {label: 'Inspection sheet', value: 'inspection'},
+    {label: 'Awaiting purchase order', value: 'purchase'},
+    {label: 'Job card created', value: 'job-card'},
+    {label: 'To be allocated', value: 'to be allocated'},
+    {label: 'Awaiting courier', value: 'awaiting courier'},
+    {label: 'Collected by Courier', value: 'collected by courier'},
+    {label: 'Parts required', value: 'parts required'},
+    {label: 'Picking', value: 'picking'},
+    {label: 'To be invoiced', value: 'to be invoiced'},
+    {label: 'Invoiced', value: 'invoiced'},
+    {label: 'Completed', value: 'completed'},
   ];
 
   const handleImagePick = () => {
-    launchImageLibrary({mediaType: 'photo'}, response => {
-      if (response?.assets) {
-        setImage(response.assets[0].uri);
-        setValue('image', response.assets[0].uri);
-      }
-    });
+    launchImageLibrary(
+      {
+        mediaType: 'photo',
+        selectionLimit: 0, // 0 means unlimited
+        includeBase64: false,
+      },
+      response => {
+        if (!response.didCancel && !response.errorCode) {
+          const newImages = response.assets.map(asset => ({
+            uri: asset.uri,
+            name: asset.fileName || `image_${Date.now()}.jpg`,
+            type: asset.type || 'image/jpeg',
+          }));
+          setImages(prev => [...prev, ...newImages]);
+        }
+      },
+    );
   };
 
   const handleVideoPick = () => {
-    launchImageLibrary({mediaType: 'video'}, response => {
-      if (response?.assets) {
-        setVideo(response.assets[0].uri);
-        setValue('video', response.assets[0].uri);
-      }
-    });
+    launchImageLibrary(
+      {
+        mediaType: 'video',
+        selectionLimit: 0, // 0 means unlimited
+        includeBase64: false,
+      },
+      response => {
+        if (!response.didCancel && !response.errorCode) {
+          const newVideos = response.assets.map(asset => ({
+            uri: asset.uri,
+            name: asset.fileName || `video_${Date.now()}.mp4`,
+            type: asset.type || 'video/mp4',
+          }));
+          setVideos(prev => [...prev, ...newVideos]);
+        }
+      },
+    );
   };
 
-  const onSubmit = data => {
-    console.log('Form Data:', data);
-    setShowSuccessModal(true);
+  const removeImage = index => {
+    setImages(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const removeVideo = index => {
+    setVideos(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const onSubmit = async data => {
+    try {
+      const formData = new FormData();
+
+      // Add required fields
+      formData.append('ticket_status', data.ticket_status.toLowerCase());
+      formData.append('technician_comment', data.technician_comment);
+
+      // Add images
+      images.forEach((image, index) => {
+        formData.append('images', {
+          uri: image.uri,
+          name: image.name,
+          type: image.type,
+        });
+      });
+
+      // Add videos
+      videos.forEach((video, index) => {
+        formData.append('videos', {
+          uri: video.uri,
+          name: video.name,
+          type: video.type,
+        });
+      });
+
+      // Make the API call
+      const response = await updateInspaction({id, formData}).unwrap();
+      console.log('response', response);
+      if (response.status === true) {
+        setShowSuccessModal(true);
+      }
+    } catch (error) {
+      console.error('Submission error:', error);
+      Alert.alert(
+        'Error',
+        error.data?.message || 'Failed to update inspection',
+      );
+    }
   };
 
   return (
@@ -134,8 +212,8 @@ const InspactionDetails = ({navigation, route}) => {
       </View>
 
       <View style={tw`bg-[#F0F0F0] p-4 rounded-lg mx-[20px] my-2`}>
-        <Text style={tw`font-bold text-[#FF6769]`}>Technician:</Text>
-        <Text style={tw`text-[#000000]`}>{sheet?.technician.name}</Text>
+        <Text style={tw`font-bold text-[#FF6769]`}>support_agent_comment:</Text>
+        <Text style={tw`text-[#000000]`}>{sheet?.support_agent_comment}</Text>
         {sheet?.technician.image && (
           <Image
             source={{uri: sheet?.technician?.image}}
@@ -148,13 +226,15 @@ const InspactionDetails = ({navigation, route}) => {
         <Text style={tw`font-bold text-[#FF6769]`}>Ticket status:</Text>
         <Controller
           control={control}
-          name="status"
+          name="ticket_status"
           render={({field: {value, onChange}}) => (
             <>
               <TouchableOpacity
                 onPress={() => setOpen(!open)}
                 style={tw`flex-row justify-between items-center mt-2 rounded-lg p-2`}>
-                <Text style={tw`text-gray-600`}>{value}</Text>
+                <Text style={tw`text-gray-600`}>
+                  {items.find(item => item.value === value)?.label || value}
+                </Text>
                 <Text style={tw`text-gray-600`}>
                   {open ? (
                     <SvgXml xml={Downarrow} />
@@ -170,11 +250,11 @@ const InspactionDetails = ({navigation, route}) => {
                     <TouchableOpacity
                       key={item.value}
                       onPress={() => {
-                        onChange(item.label);
+                        onChange(item.value);
                         setOpen(false);
                       }}
                       style={tw`border border-gray-300 p-2 ${
-                        value === item.label ? 'bg-red-100' : 'bg-white'
+                        value === item.value ? 'bg-red-100' : 'bg-white'
                       }`}>
                       <Text style={tw`text-gray-600`}>{item.label}</Text>
                     </TouchableOpacity>
@@ -190,7 +270,7 @@ const InspactionDetails = ({navigation, route}) => {
         <Text style={tw`font-bold text-[#FF6769]`}>Your Comment</Text>
         <Controller
           control={control}
-          name="comment"
+          name="technician_comment"
           rules={{required: true}}
           render={({field: {onChange, onBlur, value}}) => (
             <TextInput
@@ -200,7 +280,7 @@ const InspactionDetails = ({navigation, route}) => {
               style={tw`p-2 rounded-lg mt-2 h-[190px]`}
               onBlur={onBlur}
               onChangeText={onChange}
-              value={value}
+              defaultValue={sheet?.technician_comment || value}
             />
           )}
         />
@@ -242,6 +322,50 @@ const InspactionDetails = ({navigation, route}) => {
         </View>
       )}
 
+      {/* Display newly selected images */}
+      {images.length > 0 && (
+        <View style={tw`mx-[20px] my-2`}>
+          <Text style={tw`font-bold text-[#FF6769] mb-2`}>New Images:</Text>
+          <ScrollView horizontal>
+            {images.map((img, index) => (
+              <View key={index} style={tw`relative mr-2`}>
+                <Image
+                  source={{uri: img.uri}}
+                  style={tw`w-32 h-32 rounded-lg`}
+                />
+                <TouchableOpacity
+                  style={tw`absolute top-1 right-1 bg-red-500 rounded-full w-6 h-6 items-center justify-center`}
+                  onPress={() => removeImage(index)}>
+                  <Text style={tw`text-white`}>×</Text>
+                </TouchableOpacity>
+              </View>
+            ))}
+          </ScrollView>
+        </View>
+      )}
+
+      {/* Display newly selected videos */}
+      {videos.length > 0 && (
+        <View style={tw`mx-[20px] my-2`}>
+          <Text style={tw`font-bold text-[#FF6769] mb-2`}>New Videos:</Text>
+          <ScrollView horizontal>
+            {videos.map((vid, index) => (
+              <View key={index} style={tw`relative mr-2`}>
+                <View
+                  style={tw`w-32 h-32 bg-gray-300 rounded-lg items-center justify-center`}>
+                  <Text style={tw`text-center`}>Video {index + 1}</Text>
+                </View>
+                <TouchableOpacity
+                  style={tw`absolute top-1 right-1 bg-red-500 rounded-full w-6 h-6 items-center justify-center`}
+                  onPress={() => removeVideo(index)}>
+                  <Text style={tw`text-white`}>×</Text>
+                </TouchableOpacity>
+              </View>
+            ))}
+          </ScrollView>
+        </View>
+      )}
+
       {/* File upload sections */}
       <View style={tw`flex-row justify-center space-x-4 my-4 gap-4`}>
         <TouchableOpacity
@@ -266,9 +390,12 @@ const InspactionDetails = ({navigation, route}) => {
       </View>
 
       <TouchableOpacity
+        disabled={isUpdating}
         style={tw`bg-[#ED1C24] w-[50%] mx-auto p-4 rounded-lg my-4 items-center`}
         onPress={handleSubmit(onSubmit)}>
-        <Text style={tw`text-white font-bold`}>Submit</Text>
+        <Text style={tw`text-white font-bold`}>
+          {isUpdating ? 'loading....' : 'Submit'}
+        </Text>
       </TouchableOpacity>
 
       <SuccessModal

@@ -79,6 +79,7 @@ export const api = createApi({
     'ticket',
     'message',
     'Technicians',
+    'jobcard',
   ],
 });
 

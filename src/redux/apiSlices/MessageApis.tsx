@@ -55,12 +55,20 @@ export const MessageApiSlice = api.injectEndpoints({
         }),
 
         getMessageByreciverId: builder.query<any, any>({
-            query: ({ id }) => ({
-                url: `/get-message?receiver_id=${id}`,
-                method: 'GET',
-            }),
+            query: ({ id, page, per_page }) => {
+                const params = new URLSearchParams({
+                    receiver_id: id,
+                    per_page: '9999999',
+                    page: page.toString(),
+                });
+                return {
+                    url: `/get-message?${params.toString()}`,
+                    method: 'GET',
+                };
+            },
             providesTags: ['message'],
         }),
+
 
         getAuthUserChatlist: builder.query<any, { search: string }>({
             query: ({ search }) => {

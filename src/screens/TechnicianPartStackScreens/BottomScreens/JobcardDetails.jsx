@@ -8,12 +8,12 @@ import {
   Modal,
   Image,
   ActivityIndicator,
+  Alert,
 } from 'react-native';
 import {useForm, Controller} from 'react-hook-form';
 import {SvgXml} from 'react-native-svg';
 import tw from '../../../lib/tailwind';
 import {
-  aboutIcon,
   Downarrow,
   imageupload,
   locationicon,
@@ -24,8 +24,8 @@ import {
 import TicketDetailsHeader from '../../../lib/components/TicketDetailsHeader';
 import {launchImageLibrary} from 'react-native-image-picker';
 import {
-  useGetjobcardQuery,
   useGetSingleJobCardQuery,
+  useUpdateJobCardMutation,
 } from '../../../redux/apiSlices/jobCard';
 
 const SuccessModal = ({visible, onClose}) => (
@@ -56,55 +56,133 @@ const JobcardDetails = ({navigation, route}) => {
   const {jobcard} = route.params;
   const id = jobcard?.id;
 
-  console.log('id', id);
-
   const {data: singlecard, isLoading} = useGetSingleJobCardQuery(id);
-  console.log('cardData-------------', singlecard?.data);
+  const [updateJobCard, {isLoading: isUpdating}] = useUpdateJobCardMutation();
   const cardData = singlecard?.data;
-  const {control, handleSubmit, setValue} = useForm();
+
+  const {control, handleSubmit, setValue} = useForm({
+    defaultValues: {
+      status: cardData?.status || 'New',
+      technician_comment: cardData?.technician_comment || '',
+    },
+  });
+
   const [open, setOpen] = useState(false);
-  const [image, setImage] = useState(null);
-  const [video, setVideo] = useState(null);
+  const [images, setImages] = useState([]);
+  const [videos, setVideos] = useState([]);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
-  const items = [
-    {label: 'New', value: 'new'},
-    {label: 'Assigned', value: 'assigned'},
-    {label: 'Inspection sheet', value: 'inspection'},
-    {label: 'Awaiting purchase order', value: 'purchase'},
-    {label: 'Job card created', value: 'job-card'},
-    {label: 'To be allocated', value: 'To be allocated'},
-    {label: 'Awaiting courier', value: 'Awaiting courier'},
-    {label: 'Collected by Courier', value: 'Collected by Courier'},
-    {label: 'Parts required', value: 'Parts required'},
+  const statusItems = [
+    {label: 'New', value: 'New'},
+    {label: 'Assigned', value: 'Assigned'},
+    {label: 'Inspection sheet', value: 'Inspection'},
+    {label: 'Awaiting purchase order', value: 'Purchase'},
+    {label: 'Job card created', value: 'Job-card'},
+    {label: 'To be allocated', value: 'to be allocated'},
+    {label: 'Awaiting courier', value: 'awaiting courier'},
+    {label: 'Collected by Courier', value: 'collected by courier'},
+    {label: 'Parts required', value: 'parts required'},
     {label: 'Picking', value: 'Picking'},
-    {label: 'To be invoiced', value: 'To be invoiced'},
+    {label: 'To be invoiced', value: 'to be invoiced'},
     {label: 'Invoiced', value: 'Invoiced'},
     {label: 'Completed', value: 'Completed'},
   ];
 
   const handleImagePick = () => {
-    launchImageLibrary({mediaType: 'photo'}, response => {
-      if (response?.assets) {
-        setImage(response.assets[0].uri);
-        setValue('image', response.assets[0].uri);
-      }
-    });
+    launchImageLibrary(
+      {
+        mediaType: 'photo',
+        selectionLimit: 0,
+        includeBase64: false,
+      },
+      response => {
+        if (!response.didCancel && !response.errorCode && response.assets) {
+          const newImages = response.assets.map(asset => ({
+            uri: asset.uri,
+            name: asset.fileName || `image_${Date.now()}.jpg`,
+            type: asset.type || 'image/jpeg',
+          }));
+          setImages(prev => [...prev, ...newImages]);
+        }
+      },
+    );
   };
 
   const handleVideoPick = () => {
-    launchImageLibrary({mediaType: 'video'}, response => {
-      if (response?.assets) {
-        setVideo(response.assets[0].uri);
-        setValue('video', response.assets[0].uri);
-      }
-    });
+    launchImageLibrary(
+      {
+        mediaType: 'video',
+        selectionLimit: 0,
+        includeBase64: false,
+      },
+      response => {
+        if (!response.didCancel && !response.errorCode && response.assets) {
+          const newVideos = response.assets.map(asset => ({
+            uri: asset.uri,
+            name: asset.fileName || `video_${Date.now()}.mp4`,
+            type: asset.type || 'video/mp4',
+          }));
+          setVideos(prev => [...prev, ...newVideos]);
+        }
+      },
+    );
   };
 
-  const onSubmit = data => {
-    console.log('Form Data:', data);
-    setShowSuccessModal(true);
+  const removeImage = index => {
+    const newImages = [...images];
+    newImages.splice(index, 1);
+    setImages(newImages);
   };
+
+  const removeVideo = index => {
+    const newVideos = [...videos];
+    newVideos.splice(index, 1);
+    setVideos(newVideos);
+  };
+
+  const onSubmit = async data => {
+    try {
+      const formData = new FormData();
+
+      // Add required fields
+      formData.append('job_status', data.status.toLowerCase());
+      formData.append('technician_comment', data.technician_comment);
+
+      // Add images as an array
+      images.forEach((image, index) => {
+        formData.append(`images[${index}]`, {
+          uri: image.uri,
+          name: image.name || `image_${index}.jpg`,
+          type: image.type || 'image/jpeg',
+        });
+      });
+
+      // Add videos as an array
+      videos.forEach((video, index) => {
+        formData.append(`videos[${index}]`, {
+          uri: video.uri,
+          name: video.name || `video_${index}.mp4`,
+          type: video.type || 'video/mp4',
+        });
+      });
+
+      // Log FormData contents for debugging
+      for (const [key, value] of formData._parts) {
+        console.log(key, value);
+      }
+
+      // Make the API call
+      const response = await updateJobCard({id, formData}).unwrap();
+
+      if (response.status === true) {
+        setShowSuccessModal(true);
+      }
+    } catch (error) {
+      console.error('Submission error:', error);
+      Alert.alert('Error', error.data?.message || 'Failed to update job card');
+    }
+  };
+  // ... [Rest of your component code remains the same until the submit button]
 
   if (isLoading) {
     return (
@@ -121,11 +199,12 @@ const JobcardDetails = ({navigation, route}) => {
       </View>
     );
   }
-
   return (
     <ScrollView style={tw`bg-white flex-1`}>
+      {/* ... [All your existing UI components] ... */}
       <TicketDetailsHeader />
 
+      {/* Asset Information */}
       <View style={tw`bg-[#FFE7E7] p-4 rounded-lg mx-[20px] my-2 mt-6`}>
         <Text style={tw`text-[14px] font-bold text-[#FF6769] mb-1`}>
           {cardData?.inspection_sheet?.ticket?.asset?.brand || 'No Asset Name'}
@@ -136,6 +215,7 @@ const JobcardDetails = ({navigation, route}) => {
         </Text>
       </View>
 
+      {/* Problem Description */}
       <View style={tw`bg-[#F0F0F0] p-4 rounded-lg mx-[20px] my-2`}>
         <Text style={tw`font-bold text-[#FF6769]`}>More about problem:</Text>
         <Text style={tw`text-gray-600 text-[14px] font-normal`}>
@@ -143,6 +223,7 @@ const JobcardDetails = ({navigation, route}) => {
         </Text>
       </View>
 
+      {/* Customer Information */}
       <View style={tw`bg-[#F0F0F0] p-4 rounded-lg mx-[20px] my-2`}>
         <Text style={tw`font-bold text-[#FF6769]`}>Name:</Text>
         <Text style={tw`text-[#000000]`}>
@@ -162,6 +243,7 @@ const JobcardDetails = ({navigation, route}) => {
         </View>
       </View>
 
+      {/* Assignment Information */}
       <View style={tw`bg-[#F0F0F0] p-4 rounded-lg mx-[20px] my-2`}>
         <Text style={tw`font-bold text-[#FF6769]`}>Assigned by:</Text>
         <Text style={tw`text-[#000000]`}>
@@ -169,6 +251,7 @@ const JobcardDetails = ({navigation, route}) => {
         </Text>
       </View>
 
+      {/* Ticket Details */}
       <View style={tw`bg-[#F0F0F0] p-4 rounded-lg mx-[20px] my-2`}>
         <Text style={tw`font-bold text-[#FF6769]`}>Ticket number:</Text>
         <Text style={tw`text-[#000000]`}>#{cardData?.ticket_id}</Text>
@@ -188,6 +271,7 @@ const JobcardDetails = ({navigation, route}) => {
         </Text>
       </View>
 
+      {/* Signature */}
       <View style={tw`bg-[#F0F0F0] p-4 rounded-lg mx-[20px] my-2`}>
         <Text style={tw`font-bold text-[#FF6769]`}>
           Signature of location employee:
@@ -203,12 +287,12 @@ const JobcardDetails = ({navigation, route}) => {
         )}
       </View>
 
+      {/* Status Selection */}
       <View style={tw`bg-[#F0F0F0] p-4 rounded-lg mx-[20px] my-2`}>
         <Text style={tw`font-bold text-[#FF6769]`}>Ticket status:</Text>
         <Controller
           control={control}
           name="status"
-          defaultValue={cardData?.status || 'New'}
           render={({field: {value, onChange}}) => (
             <>
               <TouchableOpacity
@@ -226,7 +310,7 @@ const JobcardDetails = ({navigation, route}) => {
 
               {open && (
                 <View style={tw`mt-2 rounded-lg`}>
-                  {items.map(item => (
+                  {statusItems.map(item => (
                     <TouchableOpacity
                       key={item.value}
                       onPress={() => {
@@ -246,28 +330,28 @@ const JobcardDetails = ({navigation, route}) => {
         />
       </View>
 
+      {/* Technician Comment */}
       <View style={tw`bg-[#F0F0F0] p-4 rounded-lg mx-[20px] my-2`}>
         <Text style={tw`font-bold text-[#FF6769]`}>Your Comment</Text>
         <Controller
           control={control}
-          name="comment"
-          defaultValue={cardData?.technician_comment || ''}
+          name="technician_comment"
           rules={{required: true}}
           render={({field: {onChange, onBlur, value}}) => (
             <TextInput
-              placeholder="type here"
+              placeholder="Type your comments here..."
               multiline
               textAlignVertical="top"
               style={tw`p-2 rounded-lg mt-2 h-[190px]`}
               onBlur={onBlur}
               onChangeText={onChange}
-              value={value}
+              defaultValue={cardData?.technician_comment || value}
             />
           )}
         />
       </View>
 
-      {/* Display existing images */}
+      {/* Existing Media */}
       {cardData?.image?.length > 0 && (
         <View style={tw`mx-[20px] my-2`}>
           <Text style={tw`font-bold text-[#FF6769] mb-2`}>
@@ -275,17 +359,14 @@ const JobcardDetails = ({navigation, route}) => {
           </Text>
           <ScrollView horizontal>
             {cardData.image.map((img, index) => (
-              <Image
-                key={index}
-                source={{uri: img}}
-                style={tw`w-32 h-32 mr-2 rounded-lg`}
-              />
+              <View key={index} style={tw`mr-2`}>
+                <Image source={{uri: img}} style={tw`w-32 h-32 rounded-lg`} />
+              </View>
             ))}
           </ScrollView>
         </View>
       )}
 
-      {/* Display existing videos */}
       {cardData?.video?.length > 0 && (
         <View style={tw`mx-[20px] my-2`}>
           <Text style={tw`font-bold text-[#FF6769] mb-2`}>
@@ -303,13 +384,78 @@ const JobcardDetails = ({navigation, route}) => {
         </View>
       )}
 
-      {/* File upload sections */}
+      {/* New Media Uploads */}
+      {images.length > 0 && (
+        <View style={tw`mx-[20px] my-2`}>
+          <Text style={tw`font-bold text-[#FF6769] mb-2`}>
+            New Images ({images.length}):
+          </Text>
+          <ScrollView horizontal>
+            {images.map((img, index) => (
+              <View key={index} style={tw`mr-2 relative`}>
+                <Image
+                  source={{uri: img.uri}}
+                  style={tw`w-32 h-32 rounded-lg`}
+                />
+                <View
+                  style={tw`absolute bottom-0 left-0 right-0 bg-black/50 p-1`}>
+                  <Text style={tw`text-white text-xs`} numberOfLines={1}>
+                    {img.name}
+                  </Text>
+                  <Text style={tw`text-white text-xs`}>
+                    {Math.round(img.size / 1024)} KB
+                  </Text>
+                </View>
+                <TouchableOpacity
+                  style={tw`absolute top-1 right-1 bg-red-500 rounded-full w-6 h-6 items-center justify-center`}
+                  onPress={() => removeImage(index)}>
+                  <Text style={tw`text-white`}>×</Text>
+                </TouchableOpacity>
+              </View>
+            ))}
+          </ScrollView>
+        </View>
+      )}
+
+      {videos.length > 0 && (
+        <View style={tw`mx-[20px] my-2`}>
+          <Text style={tw`font-bold text-[#FF6769] mb-2`}>
+            New Videos ({videos.length}):
+          </Text>
+          <ScrollView horizontal>
+            {videos.map((vid, index) => (
+              <View key={index} style={tw`mr-2 relative`}>
+                <View
+                  style={tw`w-32 h-32 rounded-lg bg-gray-300 justify-center items-center`}>
+                  <Text style={tw`text-center`}>Video Preview</Text>
+                </View>
+                <View
+                  style={tw`absolute bottom-0 left-0 right-0 bg-black/50 p-1`}>
+                  <Text style={tw`text-white text-xs`} numberOfLines={1}>
+                    {vid.name}
+                  </Text>
+                  <Text style={tw`text-white text-xs`}>
+                    {Math.round(vid.size / 1024)} KB
+                  </Text>
+                </View>
+                <TouchableOpacity
+                  style={tw`absolute top-1 right-1 bg-red-500 rounded-full w-6 h-6 items-center justify-center`}
+                  onPress={() => removeVideo(index)}>
+                  <Text style={tw`text-white`}>×</Text>
+                </TouchableOpacity>
+              </View>
+            ))}
+          </ScrollView>
+        </View>
+      )}
+
+      {/* Upload Buttons */}
       <View style={tw`flex-row justify-center space-x-4 my-4 gap-4`}>
         <TouchableOpacity
           onPress={handleImagePick}
           style={tw`border-2 border-dashed border-red-300 rounded-lg bg-[#F0F0F0] w-[40%] h-[150px] items-center justify-center`}>
           <SvgXml xml={imageupload} />
-          <Text style={tw`text-[#777777] pt-2 font-bold`}>Take Image</Text>
+          <Text style={tw`text-[#777777] pt-2 font-bold`}>Add Images</Text>
           <Text style={tw`text-red-400`}>
             or <Text style={tw`font-bold`}>BROWSE</Text>
           </Text>
@@ -319,7 +465,7 @@ const JobcardDetails = ({navigation, route}) => {
           onPress={handleVideoPick}
           style={tw`border-2 border-dashed border-red-300 rounded-lg bg-[#F0F0F0] w-[40%] h-[150px] items-center justify-center`}>
           <SvgXml xml={videoUpload} />
-          <Text style={tw`text-[#777777] pt-2 font-bold`}>Take Video</Text>
+          <Text style={tw`text-[#777777] pt-2 font-bold`}>Add Videos</Text>
           <Text style={tw`text-red-400`}>
             or <Text style={tw`font-bold`}>BROWSE</Text>
           </Text>
@@ -328,8 +474,13 @@ const JobcardDetails = ({navigation, route}) => {
 
       <TouchableOpacity
         style={tw`bg-[#ED1C24] w-[50%] mx-auto p-4 rounded-lg my-4 items-center`}
-        onPress={handleSubmit(onSubmit)}>
-        <Text style={tw`text-white font-bold`}>save & send</Text>
+        onPress={handleSubmit(onSubmit)}
+        disabled={isUpdating}>
+        {isUpdating ? (
+          <ActivityIndicator color="white" />
+        ) : (
+          <Text style={tw`text-white font-bold`}>SAVE & SEND</Text>
+        )}
       </TouchableOpacity>
 
       <SuccessModal

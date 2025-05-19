@@ -1,5 +1,5 @@
 import {useNavigation} from '@react-navigation/native';
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   FlatList,
   Text,
@@ -21,6 +21,18 @@ const JobCard = () => {
   const [perPage] = useState(10);
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
+  console.log('searchQuery', debouncedSearchQuery);
+  // Debounce search input (500ms delay)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
   const {
     data: responseData,
     isLoading,
@@ -34,10 +46,13 @@ const JobCard = () => {
 
   // Filter job cards by status
   const newCards = jobCards.filter(
-    item => item.job_status === 'New' || item.status === 'View the problem',
+    item =>
+      item.job_status === 'New' ||
+      item.job_status === 'View the problem' ||
+      item.job_status === 'Assigned',
   );
   const pastCards = jobCards.filter(
-    item => !['New', 'View the problem'].includes(item.job_status),
+    item => !['New', 'View the problem', 'Assigned'].includes(item.job_status),
   );
 
   const onRefresh = async () => {
@@ -118,7 +133,10 @@ const JobCard = () => {
 
   return (
     <View style={styles.container}>
-      <HeaderWithSearch setSearchQuery={setSearchQuery} />
+      <HeaderWithSearch
+        title="Search Job Cards"
+        setSearchQuery={setSearchQuery}
+      />
 
       <FlatList
         data={[

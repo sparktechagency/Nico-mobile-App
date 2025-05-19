@@ -173,6 +173,7 @@ const Chats = () => {
           contentContainerStyle={tw`pb-16`}
           refreshing={isFetching}
           onRefresh={refetch}
+          removeClippedSubviews={false}
         />
       </View>
 

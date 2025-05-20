@@ -38,8 +38,8 @@ const TechnicianBottomTab = () => {
         tabBarActiveTintColor: 'red',
         tabBarInactiveTintColor: 'gray',
         tabBarLabelStyle: {
-          fontSize: isTablet ? 16 : 13, // Adjust font size based on screen size
-          fontWeight: 'bold', // Optional: make text bold
+          fontSize: isTablet ? 16 : 13,
+          fontWeight: 'bold',
         },
       }}>
       <Tab.Screen
@@ -66,7 +66,7 @@ const TechnicianBottomTab = () => {
               <ChatsIcon width={21} height={21} fill={color} />
             ),
 
-            headerShown: false,
+          headerShown: false,
         }}
       />
       <Tab.Screen
@@ -87,7 +87,7 @@ const TechnicianBottomTab = () => {
         name="JobCard"
         component={JobCard}
         options={{
-          headerShown:false,
+          headerShown: false,
           tabBarIcon: ({color, focused}) =>
             focused ? (
               <JobCardIconFocused width={24} height={24} fill="red" />
@@ -100,7 +100,7 @@ const TechnicianBottomTab = () => {
         name="Location"
         component={Location}
         options={{
-          headerShown:false,
+          headerShown: false,
           tabBarIcon: ({color, focused}) =>
             focused ? (
               <LocationIconFocused width={24} height={24} fill="red" />

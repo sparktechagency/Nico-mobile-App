@@ -237,7 +237,12 @@ const JobcardDetails = ({navigation, route}) => {
           <Text style={tw`text-[#000000]`}>
             {cardData?.inspection_sheet?.ticket?.user?.address || 'No Address'}
           </Text>
-          <TouchableOpacity onPress={() => navigation.navigate('Location')}>
+          <TouchableOpacity
+            onPress={() =>
+              navigation.navigate('Location', {
+                userinfo: cardData?.inspection_sheet?.ticket?.user || null,
+              })
+            }>
             <SvgXml xml={locationicon} />
           </TouchableOpacity>
         </View>

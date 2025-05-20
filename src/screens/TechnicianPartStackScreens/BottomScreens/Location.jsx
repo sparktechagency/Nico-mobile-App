@@ -19,6 +19,7 @@ import MapViewDirections from 'react-native-maps-directions';
 import Geolocation from '@react-native-community/geolocation';
 import Icon from 'react-native-vector-icons/Ionicons';
 import tw from 'twrnc';
+import LocationNotfound from '../../../lib/components/LocationNotfound';
 
 const {width, height} = Dimensions.get('window');
 const ASPECT_RATIO = width / height;
@@ -27,7 +28,12 @@ const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECT_RATIO;
 
 const GOOGLE_MAPS_APIKEY = 'AIzaSyARXa6r8AXKRaoeWqyesQNBI8Y3EUEWSnY';
 
-const LocationScreen = () => {
+const LocationScreen = ({route}) => {
+  if (!route?.params) {
+    return <LocationNotfound />;
+  }
+  const {userinfo} = route.params || {};
+
   const [userLocation, setUserLocation] = useState({
     latitude: 37.78825,
     longitude: -122.4324,
@@ -231,216 +237,239 @@ const LocationScreen = () => {
   };
 
   return (
-    <SafeAreaView style={tw`flex-1 bg-white`}>
-      <StatusBar barStyle="dark-content" backgroundColor="white" />
-
-      {/* Search Bar */}
-      <TouchableOpacity
-        style={tw`absolute top-12 left-5 right-5 h-12 bg-white rounded-full z-10 flex-row items-center px-5 shadow-lg`}
-        onPress={() => setSearchModal(true)}>
-        <Icon name="search" size={20} style={tw`text-gray-500`} />
-        <Text style={tw`ml-2 text-gray-500 text-base`}>Where to?</Text>
-      </TouchableOpacity>
-
-      {/* Map View */}
-      {userLocation && (
-        <MapView
-          ref={mapRef}
-          provider={PROVIDER_GOOGLE}
-          style={tw`flex-1`}
-          initialRegion={userLocation}
-          showsUserLocation
-          showsMyLocationButton
-          showsCompass
-          showsTraffic={trafficEnabled}
-          mapType={mapType}
-          onMapReady={() => setIsMapReady(true)}
-          loadingEnabled={true}
-          loadingIndicatorColor="#2E7D32"
-          loadingBackgroundColor="#f5f5f5">
-          {destination && (
-            <>
-              <Marker
-                coordinate={{
-                  latitude: destination.latitude,
-                  longitude: destination.longitude,
-                }}
-                anchor={{x: 0.5, y: 0.5}} // Center point of the marker
-                flat={true} // Makes marker flat against the map
-                rotation={userLocation.heading} // Rotate with user's heading if available
-                title="Destination"
-                description="Your destination"
-                pinColor="red"
-              />
-              <MapViewDirections
-                origin={{
-                  latitude: userLocation.latitude,
-                  longitude: userLocation.longitude,
-                }}
-                destination={{
-                  latitude: destination.latitude,
-                  longitude: destination.longitude,
-                }}
-                apikey={GOOGLE_MAPS_APIKEY}
-                strokeWidth={8}
-                strokeColor="#2E7D32"
-                mode={travelMode}
-                onReady={result => {
-                  setEstimatedTime(`${Math.floor(result.duration)} mins`);
-                  setDistance(`${result.distance.toFixed(1)} km`);
-                }}
-                onError={errorMessage => {
-                  console.log('Directions error:', errorMessage);
-                  Alert.alert('Error', 'Could not calculate route');
-                }}
-              />
-            </>
-          )}
-        </MapView>
-      )}
-
-      {/* Controls Container */}
-      <View
-        style={tw`absolute right-4 bottom-28 bg-white rounded-2xl p-2 shadow-lg`}>
-        <TouchableOpacity
-          style={tw`p-2 my-1 items-center justify-center`}
-          onPress={() => setTrafficEnabled(!trafficEnabled)}>
-          <Icon
-            name="traffic"
-            size={24}
-            style={tw`${trafficEnabled ? 'text-green-700' : 'text-black'}`}
-          />
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={tw`p-2 my-1 items-center justify-center`}
-          onPress={toggleMapType}>
-          <Icon
-            name={mapType === 'standard' ? 'map' : 'earth'}
-            size={24}
-            style={tw`text-black`}
-          />
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={tw`p-2 my-1 items-center justify-center`}
-          onPress={changeTravelMode}>
-          <Icon name={getTravelModeIcon()} size={24} style={tw`text-black`} />
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={tw`p-2 my-1 items-center justify-center`}
-          onPress={toggleCoordinates}>
-          <Icon name="pin" size={24} style={tw`text-black`} />
-        </TouchableOpacity>
-      </View>
-
-      {/* Destination Info */}
-      {destination && estimatedTime && (
-        <View
-          style={tw`absolute bottom-5 left-5 right-5 bg-white rounded-xl p-4 shadow-lg`}>
-          <Text style={tw`text-lg font-bold text-gray-800 mb-2`}>
-            Destination
-          </Text>
-          <View style={tw`flex-row items-center my-1`}>
-            <Icon name="time" size={18} style={tw`text-gray-500`} />
-            <Text style={tw`ml-2 text-gray-500 text-base`}>
-              Time: {estimatedTime}
-            </Text>
-          </View>
-          <View style={tw`flex-row items-center my-1`}>
-            <Icon name="distance" size={18} style={tw`text-gray-500`} />
-            <Text style={tw`ml-2 text-gray-500 text-base`}>
-              Distance: {distance}
-            </Text>
-          </View>
-          <View style={tw`flex-row items-center my-1`}>
-            <Icon
-              name={getTravelModeIcon()}
-              size={18}
-              style={tw`text-gray-500`}
-            />
-            <Text style={tw`ml-2 text-gray-500 text-base`}>
-              Mode: {travelMode.charAt(0) + travelMode.slice(1).toLowerCase()}
-            </Text>
-          </View>
-        </View>
-      )}
-
-      {/* Coordinates Display */}
-      {showCoordinates && userLocation && (
-        <View
-          style={tw`absolute top-28 left-5 bg-black bg-opacity-70 rounded-lg p-3`}>
-          <Text style={tw`text-white text-sm`}>
-            Lat: {userLocation.latitude.toFixed(6)}
-          </Text>
-          <Text style={tw`text-white text-sm`}>
-            Long: {userLocation.longitude.toFixed(6)}
-          </Text>
-          <TouchableOpacity onPress={copyCoordinates}>
-            <Text style={tw`text-green-400 text-sm mt-1`}>Tap to copy</Text>
-          </TouchableOpacity>
-        </View>
-      )}
-
-      {/* Search Modal */}
-      <Modal visible={searchModal} animationType="slide" transparent={false}>
+    <View style={tw`flex-1 bg-white`}>
+      {userinfo ? (
         <SafeAreaView style={tw`flex-1 bg-white`}>
-          <View style={tw`flex-row items-center p-4 border-b border-gray-200`}>
+          <StatusBar barStyle="dark-content" backgroundColor="white" />
+
+          {/* Search Bar */}
+          <TouchableOpacity
+            style={tw`absolute top-12 left-5 right-5 h-12 bg-white rounded-full z-10 flex-row items-center px-5 shadow-lg`}
+            onPress={() => setSearchModal(true)}>
+            <Icon name="search" size={20} style={tw`text-gray-500`} />
+            <Text style={tw`ml-2 text-gray-500 text-base`}>Where to?</Text>
+          </TouchableOpacity>
+
+          {/* Map View */}
+          {userLocation && (
+            <MapView
+              ref={mapRef}
+              provider={PROVIDER_GOOGLE}
+              style={tw`flex-1`}
+              initialRegion={userLocation}
+              showsUserLocation
+              showsMyLocationButton
+              showsCompass
+              showsTraffic={trafficEnabled}
+              mapType={mapType}
+              onMapReady={() => setIsMapReady(true)}
+              loadingEnabled={true}
+              loadingIndicatorColor="#2E7D32"
+              loadingBackgroundColor="#f5f5f5">
+              {destination && (
+                <>
+                  <Marker
+                    coordinate={{
+                      latitude: destination.latitude,
+                      longitude: destination.longitude,
+                    }}
+                    anchor={{x: 0.5, y: 0.5}} // Center point of the marker
+                    flat={true} // Makes marker flat against the map
+                    rotation={userLocation.heading} // Rotate with user's heading if available
+                    title="Destination"
+                    description="Your destination"
+                    pinColor="red"
+                  />
+                  <MapViewDirections
+                    origin={{
+                      latitude: userLocation.latitude,
+                      longitude: userLocation.longitude,
+                    }}
+                    destination={{
+                      latitude: destination.latitude,
+                      longitude: destination.longitude,
+                    }}
+                    apikey={GOOGLE_MAPS_APIKEY}
+                    strokeWidth={8}
+                    strokeColor="#2E7D32"
+                    mode={travelMode}
+                    onReady={result => {
+                      setEstimatedTime(`${Math.floor(result.duration)} mins`);
+                      setDistance(`${result.distance.toFixed(1)} km`);
+                    }}
+                    onError={errorMessage => {
+                      console.log('Directions error:', errorMessage);
+                      Alert.alert('Error', 'Could not calculate route');
+                    }}
+                  />
+                </>
+              )}
+            </MapView>
+          )}
+
+          {/* Controls Container */}
+          <View
+            style={tw`absolute right-4 bottom-28 bg-white rounded-2xl p-2 shadow-lg`}>
             <TouchableOpacity
-              onPress={() => {
-                setSearchModal(false);
-                setSearchQuery('');
-                setSearchResults([]);
-              }}>
-              <Icon name="arrow-back" size={24} style={tw`text-black`} />
+              style={tw`p-2 my-1 items-center justify-center`}
+              onPress={() => setTrafficEnabled(!trafficEnabled)}>
+              <Icon
+                name="traffic"
+                size={24}
+                style={tw`${trafficEnabled ? 'text-green-700' : 'text-black'}`}
+              />
             </TouchableOpacity>
-            <TextInput
-              style={tw`flex-1 ml-4 h-10 px-4 bg-gray-100 rounded-full`}
-              placeholder="Search destination"
-              value={searchQuery}
-              onChangeText={text => {
-                setSearchQuery(text);
-                searchPlaces(text);
-              }}
-              autoFocus
-              clearButtonMode="while-editing"
-            />
+
+            <TouchableOpacity
+              style={tw`p-2 my-1 items-center justify-center`}
+              onPress={toggleMapType}>
+              <Icon
+                name={mapType === 'standard' ? 'map' : 'earth'}
+                size={24}
+                style={tw`text-black`}
+              />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={tw`p-2 my-1 items-center justify-center`}
+              onPress={changeTravelMode}>
+              <Icon
+                name={getTravelModeIcon()}
+                size={24}
+                style={tw`text-black`}
+              />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={tw`p-2 my-1 items-center justify-center`}
+              onPress={toggleCoordinates}>
+              <Icon name="pin" size={24} style={tw`text-black`} />
+            </TouchableOpacity>
           </View>
 
-          {loading ? (
-            <ActivityIndicator style={tw`mt-5`} size="large" color="#2E7D32" />
-          ) : (
-            <ScrollView style={tw`flex-1`}>
-              {searchResults.map(result => (
+          {/* Destination Info */}
+          {destination && estimatedTime && (
+            <View
+              style={tw`absolute bottom-5 left-5 right-5 bg-white rounded-xl p-4 shadow-lg`}>
+              <Text style={tw`text-lg font-bold text-gray-800 mb-2`}>
+                Destination
+              </Text>
+              <View style={tw`flex-row items-center my-1`}>
+                <Icon name="time" size={18} style={tw`text-gray-500`} />
+                <Text style={tw`ml-2 text-gray-500 text-base`}>
+                  Time: {estimatedTime}
+                </Text>
+              </View>
+              <View style={tw`flex-row items-center my-1`}>
+                <Icon name="distance" size={18} style={tw`text-gray-500`} />
+                <Text style={tw`ml-2 text-gray-500 text-base`}>
+                  Distance: {distance}
+                </Text>
+              </View>
+              <View style={tw`flex-row items-center my-1`}>
+                <Icon
+                  name={getTravelModeIcon()}
+                  size={18}
+                  style={tw`text-gray-500`}
+                />
+                <Text style={tw`ml-2 text-gray-500 text-base`}>
+                  Mode:{' '}
+                  {travelMode.charAt(0) + travelMode.slice(1).toLowerCase()}
+                </Text>
+              </View>
+            </View>
+          )}
+
+          {/* Coordinates Display */}
+          {showCoordinates && userLocation && (
+            <View
+              style={tw`absolute top-28 left-5 bg-black bg-opacity-70 rounded-lg p-3`}>
+              <Text style={tw`text-white text-sm`}>
+                Lat: {userLocation.latitude.toFixed(6)}
+              </Text>
+              <Text style={tw`text-white text-sm`}>
+                Long: {userLocation.longitude.toFixed(6)}
+              </Text>
+              <TouchableOpacity onPress={copyCoordinates}>
+                <Text style={tw`text-green-400 text-sm mt-1`}>Tap to copy</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+
+          {/* Search Modal */}
+          <Modal
+            visible={searchModal}
+            animationType="slide"
+            transparent={false}>
+            <SafeAreaView style={tw`flex-1 bg-white`}>
+              <View
+                style={tw`flex-row items-center p-4 border-b border-gray-200`}>
                 <TouchableOpacity
-                  key={result.place_id}
-                  style={tw`flex-row items-center p-4 border-b border-gray-100`}
-                  onPress={() => handlePlaceSelect(result.place_id)}>
-                  <Icon name="location" size={24} style={tw`text-gray-500`} />
-                  <View style={tw`ml-4 flex-1`}>
-                    <Text style={tw`text-base font-medium`}>
-                      {result.structured_formatting.main_text}
-                    </Text>
-                    <Text style={tw`text-sm text-gray-500 mt-1`}>
-                      {result.structured_formatting.secondary_text}
-                    </Text>
-                  </View>
+                  onPress={() => {
+                    setSearchModal(false);
+                    setSearchQuery('');
+                    setSearchResults([]);
+                  }}>
+                  <Icon name="arrow-back" size={24} style={tw`text-black`} />
                 </TouchableOpacity>
-              ))}
-            </ScrollView>
+                <TextInput
+                  style={tw`flex-1 ml-4 h-10 px-4 bg-gray-100 rounded-full`}
+                  placeholder="Search destination"
+                  value={searchQuery}
+                  onChangeText={text => {
+                    setSearchQuery(text);
+                    searchPlaces(text);
+                  }}
+                  autoFocus
+                  clearButtonMode="while-editing"
+                />
+              </View>
+
+              {loading ? (
+                <ActivityIndicator
+                  style={tw`mt-5`}
+                  size="large"
+                  color="#2E7D32"
+                />
+              ) : (
+                <ScrollView style={tw`flex-1`}>
+                  {searchResults.map(result => (
+                    <TouchableOpacity
+                      key={result.place_id}
+                      style={tw`flex-row items-center p-4 border-b border-gray-100`}
+                      onPress={() => handlePlaceSelect(result.place_id)}>
+                      <Icon
+                        name="location"
+                        size={24}
+                        style={tw`text-gray-500`}
+                      />
+                      <View style={tw`ml-4 flex-1`}>
+                        <Text style={tw`text-base font-medium`}>
+                          {result.structured_formatting.main_text}
+                        </Text>
+                        <Text style={tw`text-sm text-gray-500 mt-1`}>
+                          {result.structured_formatting.secondary_text}
+                        </Text>
+                      </View>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              )}
+            </SafeAreaView>
+          </Modal>
+
+          {/* Loading Indicator */}
+          {loading && (
+            <View
+              style={tw`absolute inset-0 bg-white bg-opacity-70 justify-center items-center z-50`}>
+              <ActivityIndicator size="large" color="#2E7D32" />
+            </View>
           )}
         </SafeAreaView>
-      </Modal>
-
-      {/* Loading Indicator */}
-      {loading && (
-        <View
-          style={tw`absolute inset-0 bg-white bg-opacity-70 justify-center items-center z-50`}>
-          <ActivityIndicator size="large" color="#2E7D32" />
-        </View>
+      ) : (
+        <LocationNotfound />
       )}
-    </SafeAreaView>
+    </View>
   );
 };
 

@@ -3,16 +3,18 @@ import { api } from "../api/baseApi";
 export const JobCardApis = api.injectEndpoints({
     endpoints: builder => ({
         getjobcard: builder.query({
-            query: ({ page = 1, per_page = 10 }) => ({
-                url: `/card-list`,
-                method: 'GET',
-                params: { page, per_page }
-            }),
-
+            query: ({ page = 1, per_page = 10, search }) => {
+                const hasSearch = Boolean(search);
+                const url = hasSearch ? `/card-list?search=${encodeURIComponent(search)}` : '/card-list';
+                return {
+                    url,
+                    method: 'GET',
+                    params: { page, per_page },
+                };
+            },
             providesTags: ['jobcard'],
-
-
         }),
+
 
 
 

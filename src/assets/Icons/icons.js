@@ -196,3 +196,9 @@ export const cardicon = ` <svg
             fill="#FF6769"
           />
         </svg>`;
+
+export const backicon = `<svg width="31" height="31" viewBox="0 0 31 31" fill="none" xmlns="http://www.w3.org/2000/svg">
+<circle cx="15.5" cy="15.5" r="15.5" fill="#EAEAEA"/>
+<path d="M21.2459 16.2084H12.2667L15.7542 19.6959L14.6584 20.7917L9.30005 15.4334L14.6584 10.075L15.7542 11.1709L12.2667 14.6584H21.2459V16.2084Z" fill="black"/>
+</svg>
+`;

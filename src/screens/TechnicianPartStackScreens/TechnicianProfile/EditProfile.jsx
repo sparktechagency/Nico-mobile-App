@@ -21,7 +21,7 @@ import {
 const EditProfile = () => {
   const [imageUri, setImageUri] = useState(null);
   const [imagefile, setImageFile] = useState(null);
-  const {data, isLoading} = useGetOwnProfileQuery();
+  const {data = {}, isLoading} = useGetOwnProfileQuery();
   const [updateProfile, {isLoading: isUpdating}] = useUpdateProfileMutation();
   console.log('imagefile', imagefile);
   const {
@@ -69,7 +69,7 @@ const EditProfile = () => {
   };
 
   const handleImagePick = response => {
-    setImageFile(response.assets[0]);
+    setImageFile(response?.assets?.[0]);
     if (
       !response.didCancel &&
       !response.errorCode &&

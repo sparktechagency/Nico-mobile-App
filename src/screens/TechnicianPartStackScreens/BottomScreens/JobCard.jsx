@@ -23,7 +23,7 @@ const JobCard = () => {
   const [searchQuery, setSearchQuery] = useState('');
 
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
-  console.log('searchQuery', debouncedSearchQuery);
+  console.log('searchQuery-0-----------', debouncedSearchQuery);
   // Debounce search input (500ms delay)
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -31,7 +31,7 @@ const JobCard = () => {
     }, 500);
 
     return () => clearTimeout(timer);
-  }, [searchQuery]);
+  }, [searchQuery, debouncedSearchQuery]);
 
   const {
     data: responseData,
@@ -39,7 +39,12 @@ const JobCard = () => {
     isError,
     error,
     refetch,
-  } = useGetjobcardQuery({page, per_page: perPage});
+  } = useGetjobcardQuery({
+    page,
+    per_page: perPage,
+    search: debouncedSearchQuery,
+  });
+  console.log('responseData', responseData);
 
   const jobCards = responseData?.data?.data || [];
   const totalPages = Math.ceil(responseData?.data?.total / perPage) || 1;
@@ -82,7 +87,7 @@ const JobCard = () => {
         style={[styles.card, isNewCard ? styles.newCard : styles.pastCard]}
         onPress={() => navigation.navigate('jobcarddetails', {jobcard: item})}>
         <View style={styles.cardHeader}>
-          <Text style={styles.assetBrand}>{asset.brand || 'No Brand'}</Text>
+          <Text style={styles.assetBrand}>{asset.product || 'No Brand'}</Text>
           <Text style={styles.date}>
             {new Date(item.created_at).toLocaleDateString()}
           </Text>
@@ -105,7 +110,12 @@ const JobCard = () => {
           </View>
         </View>
 
-        <Text style={styles.address}>{user.address || 'No Address'}</Text>
+        <View style={tw`flex flex-row items-center justify-between `}>
+          <Text style={styles.address}>{user.address || 'No Address'}</Text>
+          <Text style={tw`text-sm font-semibold text-[#00950A]`}>
+            ${ticket.cost || 'N/A'}
+          </Text>
+        </View>
       </TouchableOpacity>
     );
   };
@@ -300,9 +310,11 @@ const styles = StyleSheet.create({
   },
   newBadge: {
     backgroundColor: '#FF8383',
+    marginRight: 58,
   },
   completedBadge: {
     backgroundColor: '#00950A',
+    marginRight: 58,
   },
   statusText: {
     color: '#FFFFFF',

@@ -45,12 +45,14 @@ import YourProblem from '../screens/UserPartStackScreen/UserSideStackScreens/You
 import ViewAllClosed from '../screens/UserPartStackScreen/UserSideStackScreens/ViewAllClosed';
 import UserCallsDetails from '../screens/UserPartStackScreen/UserSideStackScreens/UserCallsDetails';
 import ChatList from '../screens/UserPartStackScreen/UserSideStackScreens/ChatList';
-import {StatusBar} from 'react-native';
+import {StatusBar, TouchableOpacity} from 'react-native';
 import NewUserOtpVerify from '../screens/UserPartStackScreen/UserAuthenticationScreens/NewUserOtpVerify';
 import SelectAtechnician from '../screens/UserPartStackScreen/UserSideStackScreens/SelectAtechnician';
 import {useGetOwnProfileQuery} from '../redux/apiSlices/authApiSlice';
 import TicketList from '../screens/TechnicianPartStackScreens/BottomScreens/Tickets/RenderList';
 import Chats from '../screens/TechnicianPartStackScreens/BottomScreens/Chats';
+import {SvgXml} from 'react-native-svg';
+import {backIcon} from '../assets/Icons/icons';
 // import Icon from 'react-native-vector-icons/Ionicons';
 
 const Stack = createNativeStackNavigator();
@@ -317,75 +319,111 @@ const AppNavigation = () => {
         <Stack.Screen
           name="Edit Profile"
           component={EditProfile}
-          options={{
+          options={({navigation}) => ({
+            title: 'Edit Profile',
             headerStyle: {
               backgroundColor: 'red',
               borderBottomLeftRadius: 40,
-              borderBottomRightRadius: 40,
+              borderBottomRightRadius: 100,
               elevation: 0,
               shadowOpacity: 0,
             },
+            headerTitleAlign: 'center',
             headerTintColor: 'white',
-          }}
+            headerLeft: () => (
+              <TouchableOpacity onPress={() => navigation.goBack()}>
+                <SvgXml xml={backIcon} />
+              </TouchableOpacity>
+            ),
+          })}
         />
+
         <Stack.Screen
           name="Change password"
           component={ChnagePassword}
-          options={{
+          options={({navigation}) => ({
+            title: 'Change password',
             headerStyle: {
               backgroundColor: 'red',
               borderBottomLeftRadius: 40,
-              borderBottomRightRadius: 40,
+              borderBottomRightRadius: 100,
               elevation: 0,
               shadowOpacity: 0,
             },
+            headerTitleAlign: 'center',
             headerTintColor: 'white',
-          }}
+            headerLeft: () => (
+              <TouchableOpacity onPress={() => navigation.goBack()}>
+                <SvgXml xml={backIcon} />
+              </TouchableOpacity>
+            ),
+          })}
         />
 
         <Stack.Screen
           name="About us"
           component={AboutUs}
-          options={{
+          options={({navigation}) => ({
+            title: 'About us',
             headerStyle: {
               backgroundColor: 'red',
               borderBottomLeftRadius: 40,
-              borderBottomRightRadius: 40,
+              borderBottomRightRadius: 100,
               elevation: 0,
               shadowOpacity: 0,
             },
+            headerTitleAlign: 'center',
             headerTintColor: 'white',
-          }}
+            headerLeft: () => (
+              <TouchableOpacity onPress={() => navigation.goBack()}>
+                <SvgXml xml={backIcon} />
+              </TouchableOpacity>
+            ),
+          })}
         />
 
         <Stack.Screen
           name="Privacy policy"
           component={PrivacyPolocy}
-          options={{
+          options={({navigation}) => ({
+            title: 'Privacy policy',
             headerStyle: {
               backgroundColor: 'red',
               borderBottomLeftRadius: 40,
-              borderBottomRightRadius: 40,
+              borderBottomRightRadius: 100,
               elevation: 0,
               shadowOpacity: 0,
             },
+            headerTitleAlign: 'center',
             headerTintColor: 'white',
-          }}
+            headerLeft: () => (
+              <TouchableOpacity onPress={() => navigation.goBack()}>
+                <SvgXml xml={backIcon} />
+              </TouchableOpacity>
+            ),
+          })}
         />
 
         <Stack.Screen
           name="FAQ"
           component={FAQ}
-          options={{
+          options={({navigation}) => ({
+            title: 'FAQ',
             headerStyle: {
               backgroundColor: 'red',
               borderBottomLeftRadius: 40,
-              borderBottomRightRadius: 40,
+              borderBottomRightRadius: 100,
               elevation: 0,
               shadowOpacity: 0,
             },
+            headerTitleAlign: 'center',
             headerTintColor: 'white',
-          }}
+            headerLeft: () => (
+              <TouchableOpacity onPress={() => navigation.goBack()}>
+                <SvgXml xml={backIcon} />
+              </TouchableOpacity>
+            ),
+          })}
         />
         <Stack.Screen
           name="TicketDetails"

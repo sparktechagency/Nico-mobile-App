@@ -107,39 +107,42 @@ const InspectionSheet = () => {
   };
 
   const renderSheetItem = ({item}) => (
-    <TouchableOpacity
-      style={tw`shadow-lg bg-white p-4 rounded-lg flex-row items-center justify-between mb-4 mx-2`}
-      onPress={() =>
-        navigation.navigate('inspactionDetails', {
-          id: item?.id,
-          type: 'inspection_id',
-        })
-      }>
-      <View style={styles.leftSection}>
-        <Text style={[styles.text, styles.title]}>
-          Ticket #{item.ticket_id}
-        </Text>
-        <Text style={styles.text}>Status: {item.status}</Text>
-        {item.support_agent_comment && (
-          <Text style={styles.addres} numberOfLines={1}>
-            Comment: {item.support_agent_comment}
-          </Text>
-        )}
-      </View>
-      <Text style={styles.date}>
-        {new Date(item.created_at).toLocaleDateString()}
-      </Text>
+    console.log('item-inspaction', item),
+    (
       <TouchableOpacity
-        style={[
-          styles.checkoutButton,
-          item.status === 'New' ? styles.checinButton : null,
-        ]}>
-        <Text style={styles.checkoutText}>
-          {item.status === 'New' ? 'Check-in' : 'Check-out'}
+        style={tw`shadow-lg bg-white p-4 rounded-lg flex-row items-center justify-between mb-4 mx-2`}
+        onPress={() =>
+          navigation.navigate('inspactionDetails', {
+            id: item?.id,
+            type: 'inspection_id',
+          })
+        }>
+        <View style={styles.leftSection}>
+          <Text style={[styles.text, styles.title]}>
+            {item?.ticket?.asset?.product}
+          </Text>
+          <Text style={styles.text}> From support agent</Text>
+          {item.support_agent_comment && (
+            <Text style={styles.addres} numberOfLines={1}>
+              {item?.ticket?.problem}
+            </Text>
+          )}
+        </View>
+        <Text style={styles.date}>
+          {new Date(item.created_at).toLocaleDateString()}
         </Text>
+        <TouchableOpacity
+          style={[
+            styles.checkoutButton,
+            item.status === 'New' ? styles.checinButton : null,
+          ]}>
+          <Text style={styles.checkoutText}>
+            {item.status === 'New' ? 'Check-in' : 'Check-out'}
+          </Text>
+        </TouchableOpacity>
+        <SvgXml xml={listNavigationIcon} style={styles.arrowIcon} />
       </TouchableOpacity>
-      <SvgXml xml={listNavigationIcon} style={styles.arrowIcon} />
-    </TouchableOpacity>
+    )
   );
 
   if (isLoading && !refreshing && page === 1) {

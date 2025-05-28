@@ -70,35 +70,43 @@ const TicketList = () => {
 
   const renderOpenTicket = ({item}) => (
     <TouchableOpacity
-      style={[styles.card, tw`bg-white p-4 rounded-lg mb-4 mx-2`]}
+      style={[styles.card, tw`bg-white p-4 rounded-lg mb-4 mx-2 `]}
       onPress={() => navigation.navigate('TicketDetails', {ticketData: item})}>
       <View style={styles.ticketContent}>
         <View style={styles.leftSection}>
           <Text style={[styles.text, styles.title]}>
-            {item.asset?.product || 'Unknown Product'}
+            {item?.asset?.product || 'Unknown Product'}
           </Text>
-          <Text style={styles.text}>
-            Serial: {item.asset?.serial_number || 'N/A'}
+          <Text style={tw`text-[#000000] text-[14px] font-medium`}>
+            {item?.order_number || 'N/A'}
           </Text>
-          <Text style={styles.text}>Status: {item.ticket_status}</Text>
         </View>
-        <View style={styles.rightSection}>
-          <Text style={styles.date}>
+
+        <View style={tw`flex flex-row items-center`}>
+          <Text style={tw`absolute -left-14 text-[#878787] -top-2`}>
             {new Date(item.created_at).toLocaleDateString()}
           </Text>
-          <View style={styles.statusContainer}>
+        </View>
+        <View style={styles.rightSection}>
+          <View style={tw`mb-4`}>
+            <SvgXml
+              style={tw`absolute top-0 right-0`}
+              xml={listNavigationIcon}
+            />
+          </View>
+          <View style={tw`mt-4 mr-10`}>
             <View
               style={[
                 styles.statusBadge,
                 item.ticket_status === 'Assigned'
                   ? styles.inProgressBadge
                   : styles.newBadge,
+                {marginRight: 10, width: 100, textAlign: 'center'},
               ]}>
-              <Text style={styles.statusText}>
+              <Text style={tw`text-center text-white font-medium`}>
                 {item.ticket_status === 'Assigned' ? 'In Progress' : 'New'}
               </Text>
             </View>
-            <SvgXml xml={listNavigationIcon} width={20} height={20} />
           </View>
         </View>
       </View>
@@ -106,32 +114,52 @@ const TicketList = () => {
   );
 
   const renderClosedTicket = ({item}) => (
-    <TouchableOpacity
-      style={[styles.card, tw`bg-white p-4 rounded-lg mb-4 mx-2`]}
-      onPress={() => navigation.navigate('TicketDetails', {ticketData: item})}>
-      <View style={styles.ticketContent}>
-        <View style={styles.leftSection}>
-          <Text style={[styles.text, styles.title]}>
-            {item.asset?.product || 'Unknown Product'}
-          </Text>
-          <Text style={styles.text}>
-            Serial: {item.asset?.serial_number || 'N/A'}
-          </Text>
-          <Text style={styles.text}>{item?.user?.address}</Text>
-        </View>
-        <View style={styles.rightSection}>
-          <Text style={styles.date}>
-            {new Date(item.created_at).toLocaleDateString()}
-          </Text>
-          <View style={styles.statusContainer}>
-            <View style={[styles.statusBadge, styles.completedBadge]}>
-              <Text style={styles.statusText}>Completed</Text>
+    console.log('item', item?.asset?.product),
+    (
+      <TouchableOpacity
+        style={[styles.card, tw`bg-white p-4 rounded-lg mb-4 mx-2`]}
+        onPress={() =>
+          navigation.navigate('TicketDetails', {ticketData: item})
+        }>
+        <View style={styles.ticketContent}>
+          <View style={styles.leftSection}>
+            <Text style={[styles.text, styles.title]}>
+              {item?.asset?.product || 'Unknown Product'}
+            </Text>
+            <Text style={tw`text-[#000000] text-[14px] font-medium`}>
+              {item.order_number || 'N/A'}
+            </Text>
+            <Text style={styles.text}>{item?.user?.address}</Text>
+          </View>
+          <View style={tw`flex flex-row items-center`}>
+            <Text style={tw`absolute -left-14 text-[#878787] -top-2`}>
+              {new Date(item.created_at).toLocaleDateString()}
+            </Text>
+          </View>
+          <View style={styles.rightSection}>
+            <View style={tw`mb-4`}>
+              <SvgXml
+                style={tw`absolute top-0 right-0`}
+                xml={listNavigationIcon}
+              />
             </View>
-            <SvgXml xml={listNavigationIcon} width={20} height={20} />
+
+            <View style={styles.statusContainer}>
+              <View
+                style={[
+                  styles.statusBadge,
+                  styles.completedBadge,
+                  tw`mr-12 w-[100px] text-center mt-3`,
+                ]}>
+                <Text style={tw`text-center text-white font-medium`}>
+                  Completed
+                </Text>
+              </View>
+            </View>
           </View>
         </View>
-      </View>
-    </TouchableOpacity>
+      </TouchableOpacity>
+    )
   );
 
   return (
@@ -144,9 +172,7 @@ const TicketList = () => {
 
       {/* Open Tickets Section */}
       <View style={tw`px-2`}>
-        <Text style={styles.sectionTitle}>
-          Running Tickets ({openTickets.length})
-        </Text>
+        <Text style={styles.sectionTitle}>Running Tickets</Text>
         {openTickets.length > 0 ? (
           <FlatList
             data={openTickets}
@@ -168,9 +194,7 @@ const TicketList = () => {
       {/* Closed Tickets Section */}
       <View style={tw`px-2 mt-4`}>
         <View style={tw`flex-row justify-between items-center mb-2`}>
-          <Text style={styles.sectionTitle}>
-            Past Tickets ({closedTickets.length})
-          </Text>
+          <Text style={styles.sectionTitle}>Past Tickets</Text>
           {closedTickets.length > 3 && (
             <TouchableOpacity
               onPress={() => navigation.navigate('ClosedTickets')}
@@ -182,7 +206,7 @@ const TicketList = () => {
 
         {closedTickets.length > 0 ? (
           <FlatList
-            data={closedTickets.slice(0, 3)}
+            data={closedTickets}
             renderItem={renderClosedTicket}
             keyExtractor={item => item.id.toString()}
             scrollEnabled={false}
@@ -212,16 +236,18 @@ const styles = StyleSheet.create({
   },
   leftSection: {
     flex: 2,
+    marginTop: 8,
   },
   rightSection: {
     flex: 1,
     alignItems: 'flex-end',
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: 15,
     fontWeight: '600',
     color: '#2d3748',
     marginVertical: 8,
+    paddingHorizontal: 8,
   },
   centerText: {
     fontSize: 16,
@@ -256,7 +282,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   title: {
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: '600',
     color: '#e53e3e',
     marginBottom: 6,
@@ -271,13 +297,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   statusBadge: {
-    borderRadius: 12,
+    borderRadius: 50,
     paddingHorizontal: 10,
     paddingVertical: 4,
     marginRight: 8,
   },
+  statusText: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: '#FFFFFF',
+    textAlign: 'center',
+  },
   newBadge: {
     backgroundColor: '#FF8383',
+    textAlign: 'center',
   },
   inProgressBadge: {
     backgroundColor: '#00950A',

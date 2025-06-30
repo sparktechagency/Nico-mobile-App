@@ -16,7 +16,11 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import {useTheme} from '../../../Context/ThemeContext';
-import { useResendOTPMutation, useVerifyOTPMutation } from '../../../redux/apiSlices/authApiSlice';
+import {
+  useResendOTPMutation,
+  useVerifyOTPMutation,
+} from '../../../redux/apiSlices/authApiSlice';
+import tw from '../../../lib/tailwind';
 
 const VerificationCodeScreenUser = ({route}) => {
   const {email} = route?.params || {};
@@ -25,8 +29,8 @@ const VerificationCodeScreenUser = ({route}) => {
   const navigation = useNavigation();
   const theme = useTheme();
   const translateY = useSharedValue(0);
-const [resendOTP, {isLoading: resendLoading}]=useResendOTPMutation();
-const [verifyOTP, {isLoading: verifyLoading}] = useVerifyOTPMutation();
+  const [resendOTP, {isLoading: resendLoading}] = useResendOTPMutation();
+  const [verifyOTP, {isLoading: verifyLoading}] = useVerifyOTPMutation();
   const handleChange = (value, index) => {
     if (value.length > 1) return;
     const newCode = [...code];
@@ -43,46 +47,40 @@ const [verifyOTP, {isLoading: verifyLoading}] = useVerifyOTPMutation();
     transform: [{translateY: translateY.value}],
   }));
 
-
-
-const handleverifycode = async() => {
-  try {
-    const response = await verifyOTP({otp:code.join('')}).unwrap();
-    console.log('Response',response);
-    if(response.status === true){
-      Alert.alert('Success', 'Verification successful.');
-      navigation.navigate('ResetPasswordAsUser',{email});
+  const handleverifycode = async () => {
+    try {
+      const response = await verifyOTP({otp: code.join('')}).unwrap();
+      console.log('Response', response);
+      if (response.status === true) {
+        Alert.alert('Success', 'Verification successful.');
+        navigation.navigate('ResetPasswordAsUser', {email});
+      }
+    } catch (error) {
+      console.log(error);
+      Alert.alert('Error', 'Failed to verify code.');
     }
-  } catch (error) {
-    console.log(error);
-    Alert.alert('Error', 'Failed to verify code.');
-  }
-};
+  };
 
-
-
-
-  const handleResend = async() => {
+  const handleResend = async () => {
     // Handle resend code logic here
 
     try {
       const response = await resendOTP({email}).unwrap();
-      if(response.status === true){
+      if (response.status === true) {
         Alert.alert('Success', 'OTP resent to your email.');
       }
     } catch (error) {
       console.log(error);
       Alert.alert('Error', 'Failed to send verification code.');
     }
-    
   };
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <Animated.View
         style={[
+          tw`flex-1 bg-white justify-center items-center`,
           styles.container,
-          {backgroundColor: theme.background},
           animatedStyle,
         ]}>
         <View style={styles.headerContainer}>
@@ -114,11 +112,9 @@ const handleverifycode = async() => {
         </View>
         <TouchableOpacity
           style={[styles.verifyButton, {backgroundColor: theme.primary}]}
-          onPress={handleverifycode}
-          
-          >
+          onPress={handleverifycode}>
           <Text style={[styles.verifyButtonText, {color: theme.background}]}>
-         {verifyLoading ? 'Verifying...' : 'Verify'}
+            {verifyLoading ? 'Verifying...' : 'Verify'}
           </Text>
         </TouchableOpacity>
         <View style={styles.footerContainer}>
@@ -126,11 +122,10 @@ const handleverifycode = async() => {
             Don’t receive an email?
           </Text>
           <TouchableOpacity onPress={handleResend}>
-            <Text style={[styles.link, {color: theme.blue}]}
-
-            
-            
-            > { resendLoading ? 'Resending...' : 'Send again'}</Text>
+            <Text style={[styles.link, {color: theme.blue}]}>
+              {' '}
+              {resendLoading ? 'Resending...' : 'Send again'}
+            </Text>
             <View style={[styles.underline, {backgroundColor: theme.blue}]} />
           </TouchableOpacity>
         </View>
@@ -145,6 +140,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: '5%',
+    backgroundColor: '#fff',
   },
   headerContainer: {
     alignItems: 'center',

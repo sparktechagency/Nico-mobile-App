@@ -1,9 +1,9 @@
-import {Text, View, TouchableOpacity} from 'react-native';
+import {Text, View, TouchableOpacity, Image} from 'react-native';
 import React, {useEffect} from 'react';
 import {useTheme} from '../Context/ThemeContext';
 import {useNavigation} from '@react-navigation/native';
 import {SafeAreaView} from 'react-native-safe-area-context';
-import InitialAppLogo from '../assets/Icons/appLogoForInitialScreen.svg';
+import InitialAppLogo from '../assets/Icons/splahslogo.png';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import tw from '../lib/tailwind'; // ✅ twrnc import
 import {useGetOwnProfileQuery} from '../redux/apiSlices/authApiSlice';
@@ -38,8 +38,8 @@ const InitialScreen = () => {
   return (
     <View style={tw`flex-1 bg-white px-4 justify-center items-center`}>
       {/* App Logo */}
-      <View style={tw`absolute top-35`}>
-        <InitialAppLogo width={367} height={267} />
+      <View style={tw`mb-4`}>
+        <Image source={InitialAppLogo} />
       </View>
 
       {/* Welcome Text */}

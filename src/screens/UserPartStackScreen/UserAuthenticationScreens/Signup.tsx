@@ -354,12 +354,12 @@ const SignUpScreen = () => {
       }
 
       if (res.error) {
-        Alert.alert('Error', res?.message || 'Failed to sign up');
+        Alert.alert('Warning', res?.message || 'Failed to sign up');
       }
 
     } catch (error) {
 
-      Alert.alert('Error', error?.message?.[0] || 'Failed to sign up');
+      Alert.alert('Warning', error?.message?.[0] || 'Failed to sign up');
 
     }
   };

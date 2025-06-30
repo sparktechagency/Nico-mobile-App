@@ -174,41 +174,42 @@ const InspectionSheet = () => {
         title=" Search Inspection Sheets"
         setSearchQuery={setSearchQuery}
       />
+      <View style={styles.contentContainer}>
+        <View>
+          <Text style={styles.sectionTitle}>Open sheets</Text>
+          <FlatList
+            data={openSheets}
+            renderItem={renderSheetItem}
+            keyExtractor={item => item.id.toString()}
+            scrollEnabled={false}
+          />
+        </View>
 
-      <View>
-        <Text style={styles.sectionTitle}>Open sheets</Text>
-        <FlatList
-          data={openSheets}
-          renderItem={renderSheetItem}
-          keyExtractor={item => item.id.toString()}
-          scrollEnabled={false}
-        />
-      </View>
+        <View>
+          <Text style={styles.sectionTitle}>New sheets</Text>
+          <FlatList
+            data={newSheets}
+            renderItem={renderSheetItem}
+            keyExtractor={item => item.id.toString()}
+            scrollEnabled={false}
+          />
+        </View>
 
-      <View>
-        <Text style={styles.sectionTitle}>New sheets</Text>
-        <FlatList
-          data={newSheets}
-          renderItem={renderSheetItem}
-          keyExtractor={item => item.id.toString()}
-          scrollEnabled={false}
-        />
-      </View>
-
-      <View>
-        <Text style={styles.sectionTitle}>Past sheets</Text>
-        <FlatList
-          data={pastSheets}
-          renderItem={renderSheetItem}
-          keyExtractor={item => item.id.toString()}
-          scrollEnabled={false}
-          ListFooterComponent={
-            <>
-              {renderFooter()}
-              <View style={{marginBottom: '2%'}} />
-            </>
-          }
-        />
+        <View>
+          <Text style={styles.sectionTitle}>Past sheets</Text>
+          <FlatList
+            data={pastSheets}
+            renderItem={renderSheetItem}
+            keyExtractor={item => item.id.toString()}
+            scrollEnabled={false}
+            ListFooterComponent={
+              <>
+                {renderFooter()}
+                <View style={{marginBottom: '2%'}} />
+              </>
+            }
+          />
+        </View>
       </View>
     </ScrollView>
   );
@@ -219,10 +220,15 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'white',
   },
+  contentContainer: {
+    padding: 4,
+    flex: 1,
+  },
   centerContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    padding: 20,
   },
   sectionTitle: {
     fontSize: 18,

@@ -1,5 +1,5 @@
-import {useNavigation} from '@react-navigation/native';
-import React, {useState, useEffect} from 'react';
+import { useNavigation } from '@react-navigation/native';
+import React, { useState, useEffect } from 'react';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -17,8 +17,8 @@ import {
   ActivityIndicator,
   Alert,
 } from 'react-native';
-import {useTheme} from '../../../Context/ThemeContext';
-import {useForgetPasswordMutation} from '../../../redux/apiSlices/authApiSlice';
+import { useTheme } from '../../../Context/ThemeContext';
+import { useForgetPasswordMutation } from '../../../redux/apiSlices/authApiSlice';
 
 const ForgotPasswordScreenUser = () => {
   const [email, setEmail] = useState('');
@@ -27,7 +27,7 @@ const ForgotPasswordScreenUser = () => {
   const theme = useTheme();
 
   const translateY = useSharedValue(0);
-  const [forgetPassword, {isLoading}] = useForgetPasswordMutation();
+  const [forgetPassword, { isLoading }] = useForgetPasswordMutation();
 
   useEffect(() => {
     const keyboardDidShowListener = Keyboard.addListener(
@@ -41,7 +41,7 @@ const ForgotPasswordScreenUser = () => {
     const keyboardDidHideListener = Keyboard.addListener(
       'keyboardDidHide',
       () => {
-        translateY.value = withTiming(0, {duration: 500});
+        translateY.value = withTiming(0, { duration: 500 });
       },
     );
 
@@ -52,12 +52,12 @@ const ForgotPasswordScreenUser = () => {
   }, []);
 
   const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{translateY: translateY.value}],
+    transform: [{ translateY: translateY.value }],
   }));
 
   const handleforgot = async () => {
     setValidationError('');
-    
+
     // Basic validation
     if (!email.trim()) {
       setValidationError('Email is required');
@@ -72,31 +72,31 @@ const ForgotPasswordScreenUser = () => {
     }
 
     try {
-      const result = await forgetPassword({email}).unwrap();
+      const result = await forgetPassword({ email }).unwrap();
       console.log('API Success:', result);
-      
+
       // Handle successful response
       if (result.status === true) {
-        navigation.navigate('VerificationAsUser', {email});
+        navigation.navigate('VerificationAsUser', { email });
         Alert.alert(
-          'Success', 
+          'Success',
           'Password reset link sent to your email',
-          [{ text: 'OK', onPress: () => navigation.navigate('VerificationAsUser',{email}) }],
+          [{ text: 'OK', onPress: () => navigation.navigate('VerificationAsUser', { email }) }],
         );
       } else {
         Alert.alert('Error', result.message || 'Failed to send reset link');
       }
     } catch (error: any) {
       console.log('API Error:', error);
-      
+
       let errorMessage = 'Failed to send reset link. Please try again.';
-      
+
       if (error.data?.message) {
         errorMessage = error.data.message;
       } else if (error.error) {
         errorMessage = error.error;
       }
-      
+
       Alert.alert('Error', errorMessage);
     }
   };
@@ -106,28 +106,28 @@ const ForgotPasswordScreenUser = () => {
       <Animated.View
         style={[
           styles.container,
-          {backgroundColor: theme.background},
+          { backgroundColor: theme.background },
           animatedStyle,
         ]}>
         <ScrollView
           contentContainerStyle={styles.scrollContainer}
           keyboardShouldPersistTaps="handled">
           <View style={styles.headerContainer}>
-            <Text style={[styles.title, {color: theme.text}]}>
+            <Text style={[styles.title, { color: theme.text }]}>
               Forgot your password
             </Text>
-            <Text style={[styles.subtitle, {color: theme.text}]}>
+            <Text style={[styles.subtitle, { color: theme.text }]}>
               Enter your registered email
             </Text>
           </View>
           <View style={styles.formContainer}>
             {validationError ? (
-              <Text style={[styles.errorText, {color: theme.error}]}>
+              <Text style={[styles.errorText, { color: theme.error }]}>
                 {validationError}
               </Text>
             ) : null}
 
-            <Text style={[styles.text, {color: theme.text}]}>Email</Text>
+            <Text style={[styles.text, { color: theme.text }]}>Email</Text>
             <TextInput
               style={[
                 styles.input,
@@ -147,11 +147,11 @@ const ForgotPasswordScreenUser = () => {
             <TouchableOpacity
               disabled={isLoading}
               onPress={handleforgot}
-              style={[styles.sendCodeButton, {backgroundColor: theme.primary}]}>
+              style={[styles.sendCodeButton, { backgroundColor: theme.primary }]}>
               {isLoading ? (
                 <ActivityIndicator color={theme.background} />
               ) : (
-                <Text style={[styles.sendCodeButtonText, {color: theme.background}]}>
+                <Text style={[styles.sendCodeButtonText, { color: theme.background }]}>
                   Send Code
                 </Text>
               )}
@@ -165,13 +165,14 @@ const ForgotPasswordScreenUser = () => {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    backgroundColor: 'white',
   },
   scrollContainer: {
     flexGrow: 1,
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
     padding: 20,
-    paddingTop: 40,
+    paddingTop: 140,
+    height: '100%',
   },
   headerContainer: {
     alignItems: 'center',

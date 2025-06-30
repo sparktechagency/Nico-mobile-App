@@ -27,10 +27,16 @@ interface ChatItem {
   message: string;
   created_at: string;
   is_read: boolean;
+  chat_list: ChatItem[];
 }
 
 interface ChatListResponse {
   chat_list: ChatItem[];
+  data: ChatItem[];
+  isLoading: boolean;
+  isError: boolean;
+  error: any;
+  isFetching: boolean;
 
 }
 
